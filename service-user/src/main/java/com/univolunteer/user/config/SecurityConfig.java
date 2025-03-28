@@ -31,17 +31,12 @@ public class SecurityConfig {
 
         http
                 .csrf(csrf -> csrf.disable())
-                .formLogin(form -> form
-                        .loginProcessingUrl("/user/login") // 登录接口
-                        .failureHandler(failureHandler)     // 登录失败处理器
-                        .permitAll()
-                )
+                .formLogin(form -> form.disable()) // 关闭自动表单登录功能
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/user/login").permitAll()
-                        .anyRequest().authenticated()
+                        .anyRequest().permitAll() // 所有请求都放行，由网关控制权限
                 );
-
         return http.build();
+
     }
     @Bean
     public PasswordEncoder passwordEncoder() {

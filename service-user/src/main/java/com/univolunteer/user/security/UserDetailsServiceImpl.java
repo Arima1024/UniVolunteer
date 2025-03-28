@@ -7,6 +7,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.*;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 public class UserDetailsServiceImpl implements UserDetailsService {
@@ -15,7 +18,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        // 使用 MyBatis-Plus 查用户
+        // 1.使用 MyBatis-Plus 查用户
         QueryWrapper<Users> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda().eq(Users::getUsername, username);
 
@@ -25,8 +28,12 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         if (user == null) {
             throw new UsernameNotFoundException("用户名不存在");
         }
+        // 2. 更新 last_login_time 字段
+        user.setLastLoginTime(LocalDateTime.now());
 
-        // 封装为 LoginUser 返回
+        // 3. 调用 updateById 更新数据库
+        userMapper.updateById(user);
+        // 4.封装为 LoginUser 返回
         return new LoginUser(user.getId().longValue(), user.getUsername(), user.getPassword(),user.getRole());
     }
 }
