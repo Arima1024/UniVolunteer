@@ -48,6 +48,16 @@
         <artifactId>spring-boot-starter-test</artifactId>
         <scope>test</scope>
     </dependency>
+    <dependency>
+        <groupId>org.aspectj</groupId>
+        <artifactId>aspectjweaver</artifactId>
+        <version>1.9.6</version>
+    </dependency>
+    <dependency>
+        <groupId>org.aspectj</groupId>
+        <artifactId>aspectjweaver</artifactId>
+        <version>1.9.20.1</version>
+    </dependency>
 </dependencies>
     <groupId>com.UniVolunteer</groupId>
     <artifactId>lib-common</artifactId>
