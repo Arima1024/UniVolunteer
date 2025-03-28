@@ -16,4 +16,5 @@ public class Users {
     private Long status;             // 账号状态（1正常，0冻结）
     private LocalDateTime lastLoginTime; // 最后登录时间
     private LocalDateTime createTime;    // 创建时间
+    private Long organizationId;  //组织id
 }

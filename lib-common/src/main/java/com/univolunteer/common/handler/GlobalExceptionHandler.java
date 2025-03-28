@@ -10,6 +10,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import javax.security.sasl.AuthenticationException;
+
 // 全局异常处理
 @Configuration
 @RestControllerAdvice
@@ -23,20 +26,14 @@ public class GlobalExceptionHandler {
         return Result.fail("无权限: " + ex.getMessage());
     }
 
-    // 处理所有异常
-    @ExceptionHandler(Exception.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public Result handleAll(Exception ex) {
-        ex.printStackTrace(); // 方便调试
-        ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.getMessage());
-        return Result.fail("服务器错误: " + ex.getMessage());
-    }
+
 
     // 处理重复键异常
-
     @ExceptionHandler(DuplicateKeyException.class)
     public Result handleDuplicateKeyException(DuplicateKeyException ex) {
         String msg = DuplicateKeyMessageParser.parseMessage(ex.getMessage());
         return Result.fail(msg);
     }
+
+
 }

@@ -17,16 +17,19 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     private final UserMapper userMapper;
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(String phone) throws UsernameNotFoundException {
         // 1.使用 MyBatis-Plus 查用户
         QueryWrapper<Users> queryWrapper = new QueryWrapper<>();
-        queryWrapper.lambda().eq(Users::getUsername, username);
+        queryWrapper.lambda().eq(Users::getPhone, phone);
 
         Users user = userMapper.selectOne(queryWrapper);
 
 
         if (user == null) {
             throw new UsernameNotFoundException("用户名不存在");
+        }
+        if (user.getStatus() == 0){
+            throw new UsernameNotFoundException("用户已被禁用");
         }
         // 2. 更新 last_login_time 字段
         user.setLastLoginTime(LocalDateTime.now());

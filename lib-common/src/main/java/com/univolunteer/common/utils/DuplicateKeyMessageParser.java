@@ -17,7 +17,7 @@ public class DuplicateKeyMessageParser {
         if (matcher.find()) {
             String value = matcher.group(1);     // 提取字段值
             String key = matcher.group(2);       // 提取字段名（假设索引名和字段名一致）
-            return String.format("%s: %s 已经存在", key, value);
+            return String.format("%s: %s 已经存在", key, value).replaceFirst("^\\w+\\.", "");
         }
 
         return "字段值已存在";
