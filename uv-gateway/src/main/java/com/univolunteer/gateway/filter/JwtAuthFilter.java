@@ -2,6 +2,7 @@
 
 package com.univolunteer.gateway.filter;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.univolunteer.common.enums.UserRoleEnum;
 import com.univolunteer.gateway.utils.JwtUtils;
 import io.jsonwebtoken.Claims;
@@ -11,12 +12,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
+import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.util.pattern.PathPatternParser;
 import reactor.core.publisher.Mono;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
@@ -46,10 +52,9 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
 
         // 从请求头获取 token
         String token = exchange.getRequest().getHeaders().getFirst(AUTHORIZATION);
-        log.info("JWT token: {}", token);
         if (token == null || !token.startsWith("Bearer ")) {
             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
-            return exchange.getResponse().setComplete();
+            return writeErrorResponse(exchange,"用户失效，请重新登录");
         }
 
         token = token.substring(7); // 去掉 "Bearer " 前缀
@@ -74,6 +79,27 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
         } catch (Exception e) {
             log.error("JWT 解析失败：{}", e.getMessage());
             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+            return writeErrorResponse(exchange, "用户失效，请重新登录");
+        }
+    }
+    private final ObjectMapper objectMapper = new ObjectMapper(); // Jackson序列化
+
+
+    private Mono<Void> writeErrorResponse(ServerWebExchange exchange, String msg) {
+        exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+        exchange.getResponse().getHeaders().setContentType(MediaType.APPLICATION_JSON);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", false);
+        result.put("errorMsg", msg);
+        result.put("data", null);
+        result.put("total", null);
+
+        try {
+            byte[] bytes = objectMapper.writeValueAsBytes(result);
+            DataBuffer buffer = exchange.getResponse().bufferFactory().wrap(bytes);
+            return exchange.getResponse().writeWith(Mono.just(buffer));
+        } catch (Exception e) {
             return exchange.getResponse().setComplete();
         }
     }

@@ -10,7 +10,7 @@ import com.univolunteer.user.utils.JwtUtils;
 
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.AuthenticationManager;
+
 import org.springframework.web.bind.annotation.*;
 import com.univolunteer.common.result.Result;
 
@@ -20,13 +20,13 @@ import com.univolunteer.common.result.Result;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final AuthenticationManager authenticationManager;
-    private final JwtUtils jwtUtils;
+
     private final UserService userService;
 
    // 登录功能
     @PostMapping("/login")
     public Result login(@RequestBody LoginUserDto loginDto) {
+
         return userService.login(loginDto);
     }
 
