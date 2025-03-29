@@ -1,6 +1,8 @@
 package com.univolunteer.common.handler;
 
 import com.univolunteer.common.exception.AdminException;
+import com.univolunteer.common.exception.LoginException;
+import com.univolunteer.common.exception.TokenException;
 import com.univolunteer.common.result.Result;
 import com.univolunteer.common.utils.DuplicateKeyMessageParser;
 import org.springframework.context.annotation.Configuration;
@@ -35,5 +37,14 @@ public class GlobalExceptionHandler {
         return Result.fail(msg);
     }
 
+    @ExceptionHandler(LoginException.class)
+    public Result handleLoginException(LoginException ex) {
+        return Result.fail(ex.getMessage());
+    }
+
+    @ExceptionHandler(TokenException.class)
+    public Result handleTokenException(TokenException ex) {
+        return Result.fail(ex.getMessage());
+    }
 
 }

@@ -29,7 +29,6 @@ public class UserContextInterceptor implements HandlerInterceptor {
             UserRoleEnum roleEnum = UserRoleEnum.valueOf(role);
             UserContext.set(new UserInfoDTO(Long.valueOf(userId), username, roleEnum));
         }
-
         return true;
     }
 
