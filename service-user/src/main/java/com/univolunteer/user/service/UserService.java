@@ -19,4 +19,13 @@ public interface UserService extends IService<Users> {
     Result resetPasswordById(Long userId);
 
     Result getList(int page, int size);
+
+
+    Result searchUsers(String organizationName, String username, String phone, int page, int size);
+
+    Result updateUserStatus(Long userId);
+
+    Result getVolunteerCount();
+
+    Result getDailyCount();
 }
