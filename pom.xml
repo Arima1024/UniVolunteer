@@ -24,10 +24,9 @@
     <modules>
         <module>lib-common</module>
         <module>service-user</module>
-        <module>service-activity</module>
-        <module>service-comment</module>
         <module>uv-gateway</module>
         <module>uv-api</module>
+        <module>service-activity</module>
     </modules>
     <scm>
         <connection/>
