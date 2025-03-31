@@ -1,37 +1,43 @@
-CREATE TABLE `activities` (
-                              `id` int NOT NULL AUTO_INCREMENT COMMENT '活动ID',
-                              `title` varchar(100) COLLATE utf8mb4_general_ci NOT NULL COMMENT '活动标题',
-                              `description` text COLLATE utf8mb4_general_ci COMMENT '活动详细描述',
-                              `organizer_id` int NOT NULL COMMENT '发布人用户ID（外键）',
-                              `category` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '活动类别',
-                              `location` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '活动地点',
-                              `start_time` datetime NOT NULL COMMENT '开始时间',
-                              `end_time` datetime NOT NULL COMMENT '结束时间',
-                              `max_volunteers` int DEFAULT '100' COMMENT '最大志愿者数',
-                              `status` tinyint DEFAULT '1' COMMENT '状态（0=草稿，1=审核中，2=招募中，3=已结束）',
-                              `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-                              `currentSignUpCount` int NOT NULL COMMENT '当前报名人数',
-                              PRIMARY KEY (`id`),
-                              KEY `idx_organizer` (`organizer_id`),
-                              KEY `idx_category` (`category`),
-                              KEY `idx_status` (`status`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='志愿活动基本信息表';
+create table activity_db.activities
+(
+    id                 int auto_increment comment '活动ID'
+        primary key,
+    title              varchar(100)                       not null comment '活动标题',
+    description        text                               null comment '活动详细描述',
+    user_id            int                                not null comment '发布人用户ID（外键）',
+    category           varchar(50)                        null comment '活动类别',
+    location           varchar(100)                       null comment '活动地点',
+    start_time         datetime                           not null comment '开始时间',
+    end_time           datetime                           not null comment '结束时间',
+    max_volunteers     int      default 100               null comment '最大志愿者数',
+    status             tinyint  default 1                 null comment '状态（0=草稿，1=审核中，2=招募中，3=已结束）',
+    create_time        datetime default CURRENT_TIMESTAMP null comment '创建时间',
+    currentSignUpCount int      default 0                 not null comment '当前报名人数',
+    sign_up_start_time datetime default CURRENT_TIMESTAMP null comment '报名开始时间',
+    sign_up_end_time   datetime default CURRENT_TIMESTAMP null comment '报名截止时间',
+    audit_time         datetime                           null
+)
+    comment '志愿活动基本信息表';
 
-CREATE TABLE `activity_assets` (
-                                   `id` int NOT NULL AUTO_INCREMENT COMMENT '资源ID',
-                                   `activity_id` int NOT NULL COMMENT '所属活动ID（外键）',
-                                   `file_url` varchar(255) COLLATE utf8mb4_general_ci NOT NULL COMMENT '资源文件URL',
-                                   `upload_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '上传时间',
-                                   PRIMARY KEY (`id`),
-                                   KEY `activity_id` (`activity_id`),
-                                   CONSTRAINT `activity_assets_ibfk_1` FOREIGN KEY (`activity_id`) REFERENCES `activities` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='活动图片/附件资源表';
+create index idx_category
+    on activity_db.activities (category);
 
-CREATE TABLE `activity_categories` (
-                                       `id` int NOT NULL AUTO_INCREMENT COMMENT '分类ID',
-                                       `name` varchar(50) COLLATE utf8mb4_general_ci NOT NULL COMMENT '活动类别名称',
-                                       `description` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '类别说明',
-                                       PRIMARY KEY (`id`),
-                                       UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='活动分类表'
+create index idx_status
+    on activity_db.activities (status);
+
+create table activity_db.activity_assets
+(
+    id          int auto_increment comment '资源ID'
+        primary key,
+    activity_id int                                not null comment '所属活动ID（外键）',
+    file_url    varchar(255)                       not null comment '资源文件URL',
+    upload_time datetime default CURRENT_TIMESTAMP null comment '上传时间',
+    constraint activity_assets_ibfk_1
+        foreign key (activity_id) references activity_db.activities (id)
+            on delete cascade
+)
+    comment '活动图片/附件资源表';
+
+create index activity_id
+    on activity_db.activity_assets (activity_id);
 
