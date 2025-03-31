@@ -1,15 +1,19 @@
 server:
-  port: 8081
+  port: 8082
 spring:
+  servlet:
+    multipart:
+      max-file-size: 10MB  # 设置单个文件最大上传大小
+      max-request-size: 10MB  # 设置请求的最大大小（包括所有文件和表单数据）
   application:
-    name: service-user
+    name: service-activity
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: Asia/Shanghai
   profiles:
     active: dev
   datasource:
-    url: jdbc:mysql://${uv.db.host}:3306/user_db?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&serverTimezone=Asia/Shanghai
+    url: jdbc:mysql://${uv.db.host}:3306/activity_db?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&serverTimezone=Asia/Shanghai
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: root
     password: ${uv.db.pw}
@@ -30,9 +34,6 @@ logging:
     dateformat: HH:mm:ss:SSS
   file:
     path: "logs/${spring.application.name}"
-jwt:
-  secret: Im15U3VwZXJTZWNyZXRLZXkxMjM0NTY3ODkwQUJDREVG   # base64 编码后的 32 字符串
-  expire-time: 8640000000  # 1天（毫秒）
 
 feign:
   okhttp:

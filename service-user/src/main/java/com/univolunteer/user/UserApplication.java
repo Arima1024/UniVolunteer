@@ -11,10 +11,6 @@ import org.springframework.context.ApplicationContextAware;
 @SpringBootApplication
 public class UserApplication {
 
-    @Value("${spring.datasource.url}")
-    private String url;
-
-
     public static void main(String[] args) {
         SpringApplication.run(UserApplication.class, args);
     }
