@@ -61,4 +61,35 @@ public class UserController {
         return userService.getList(page, size);
     }
 
+
+    //模糊查询用户
+    @GetMapping("/search")
+    @AdminOnly
+    public Result searchUsers(
+            @RequestParam(required = false) String organizationName,
+            @RequestParam(required = false) String username,
+            @RequestParam(required = false) String phone,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return userService.searchUsers(organizationName, username, phone, page, size);
+    }
+
+    @AdminOnly
+    @PutMapping("/status/{userId}")
+    public Result updateUserStatus(@PathVariable Long userId){
+        return userService.updateUserStatus(userId);
+    }
+
+    //获取志愿者数量
+    @GetMapping("/count")
+    public Result getVolunteerCount() {
+        return userService.getVolunteerCount();
+    }
+
+    //获取日活量
+    @GetMapping("/dailyCount")
+    public Result getDailyCount() {
+        return userService.getDailyCount();
+    }
 }
