@@ -24,4 +24,20 @@ public interface ActivityService {
     Result signUp(Long activityId);
 
     Result signDown(Long activityId);
+
+    Result check(Long activityId);
+
+    Result getActivityListByLocation(String location, int page, int size);
+
+    Result getActivityListByTime(String time, int page, int size);
+
+    Result getActivityListByStatus(Integer status, int page, int size);
+
+    Result searchActivity(String keyword, int page, int size);
+
+    Result getActivityListByTimeAdmin(Integer status, int page, int size);
+
+    Result getActivityListByStatusAdmin(Integer status, int page, int size);
+
+    Result getAllCategory();
 }

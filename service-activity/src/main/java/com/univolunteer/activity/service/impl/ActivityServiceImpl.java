@@ -4,8 +4,8 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-
-import com.univolunteer.activity.domain.vo.ActivityVO;
+import org.springframework.beans.BeanUtils;
+import com.univolunteer.common.domain.vo.ActivityVO;
 import com.univolunteer.common.context.UserContext;
 import com.univolunteer.common.domain.entity.Activity;
 import com.univolunteer.common.domain.entity.ActivityAsset;
@@ -141,7 +141,12 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
 
     @Override
     public Result getActivity(Long activityId) {
-        return Result.ok(getById(activityId));
+       Activity activity = getById(activityId);
+       ActivityVO activityVO = new ActivityVO();
+       BeanUtils.copyProperties(activity,activityVO);
+       ActivityAsset activityAsset = activityAssetMapper.selectOne(new QueryWrapper<ActivityAsset>().eq("activity_id", activityId));
+       activityVO.setImgUrl(activityAsset.getFileUrl());
+       return Result.ok(activityVO);
     }
 
     @Override
@@ -161,6 +166,111 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
         }
         activity.setCurrentSignUpCount(activity.getCurrentSignUpCount()-1);
         return Result.ok(updateById(activity));
+    }
+
+    @Override
+    public Result check(Long activityId) {
+        Activity activity = getById(activityId);
+        //判断是否在报名时间范围内
+        if (activity.getSignUpStartTime().isAfter(LocalDateTime.now()) || activity.getSignUpEndTime().isBefore(LocalDateTime.now())) {
+            return Result.fail("不在报名时间范围内");
+        }
+        if (activity.getCurrentSignUpCount() >= activity.getMaxVolunteers()) {
+            return Result.fail("活动已满");
+        }
+        return Result.ok();
+    }
+
+    @Override
+    public Result getActivityListByLocation(String location, int page, int size) {
+        //模糊查询让传过来的location和数据库中的location进行模糊匹配
+        Page<Activity> activityPage = new Page<>(page, size);
+        QueryWrapper<Activity> queryWrapper = new QueryWrapper<>();
+        if (location != null && !location.isEmpty()) {
+            queryWrapper.like("location", location);
+        }
+        // 3. 分页查询 activities 表数据
+        Page<Activity> activities = this.page(activityPage, queryWrapper);
+        IPage<ActivityVO> allActivityVO = getAllActivityVO(page, size, activities);
+        return Result.ok(allActivityVO.getRecords(), allActivityVO.getTotal());
+    }
+
+    @Override
+    public Result getActivityListByTime(String time, int page, int size) {
+        //将time转换为LocalDateTime
+        LocalDateTime day = LocalDateTime.parse(time);
+        //选择在当天开始的活动
+        LocalDateTime dayStart = day.withHour(0).withMinute(0).withSecond(0).withNano(0);
+        LocalDateTime dayEnd = day.withHour(23).withMinute(59).withSecond(59).withNano(999999999);
+        Page<Activity> activityPage = new Page<>(page, size);
+        QueryWrapper<Activity> queryWrapper = new QueryWrapper<>();
+        queryWrapper.between("start_time", dayStart, dayEnd);
+        // 3. 分页查询 activities 表数据
+        Page<Activity> activities = this.page(activityPage, queryWrapper);
+        IPage<ActivityVO> allActivityVO = getAllActivityVO(page, size, activities);
+        return Result.ok(allActivityVO.getRecords(), allActivityVO.getTotal());
+    }
+
+    @Override
+    public Result getActivityListByStatus(Integer status, int page, int size) {
+        Page<Activity> activityPage = new Page<>(page, size);
+        QueryWrapper<Activity> queryWrapper = new QueryWrapper<>();
+        if (status == 3){
+            //说明查询已经结束，需要去数据库找到结束时间，与当前时间进行比较，如果大于当前时间，则说明活动已经结束
+            queryWrapper.lt("end_time", LocalDateTime.now()).eq("user_id",UserContext.getUserId());
+        }else {
+            queryWrapper.eq("status", status).eq("user_id",UserContext.getUserId());
+        }
+        Page<Activity> activities = this.page(activityPage, queryWrapper);
+        IPage<ActivityVO> allActivityVO = getAllActivityVO(page, size, activities);
+        return Result.ok(allActivityVO.getRecords(), allActivityVO.getTotal());
+    }
+
+    @Override
+    public Result searchActivity(String keyword, int page, int size) {
+        Page<Activity> activityPage = new Page<>(page, size);
+        QueryWrapper<Activity> queryWrapper = new QueryWrapper<>();
+       queryWrapper.like("title", keyword);
+        Page<Activity> activities = this.page(activityPage, queryWrapper);
+        IPage<ActivityVO> allActivityVO = getAllActivityVO(page, size, activities);
+        return Result.ok(allActivityVO.getRecords(), allActivityVO.getTotal());
+    }
+
+    @Override
+    public Result getActivityListByTimeAdmin(Integer status, int page, int size) {
+        Page<Activity> activityPage = new Page<>(page, size);
+        QueryWrapper<Activity> queryWrapper = new QueryWrapper<>();
+        //拿到当前时间
+        LocalDateTime now = LocalDateTime.now();
+        if (status == 1) {
+            // 未开始的活动
+            queryWrapper.gt("start_time", now);
+        } else if (status == 2) {
+            // 进行中的活动：start_time <= now 且 end_time >= now
+            queryWrapper.le("start_time", now).ge("end_time", now);
+        } else if (status == 3) {
+            // 已结束的活动
+            queryWrapper.lt("end_time", now);
+        }
+        Page<Activity> activities = this.page(activityPage, queryWrapper);
+        IPage<ActivityVO> allActivityVO = getAllActivityVO(page, size, activities);
+        return Result.ok(allActivityVO.getRecords(), allActivityVO.getTotal());
+    }
+
+    @Override
+    public Result getActivityListByStatusAdmin(Integer status, int page, int size) {
+        //根据状态查询活动
+        Page<Activity> activityPage = new Page<>(page, size);
+        QueryWrapper<Activity> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("status", status);
+        Page<Activity> activities = this.page(activityPage, queryWrapper);
+        IPage<ActivityVO> allActivityVO = getAllActivityVO(page, size, activities);
+        return Result.ok(allActivityVO.getRecords(), allActivityVO.getTotal());
+    }
+
+    @Override
+    public Result getAllCategory() {
+        return Result.ok(activityMapper.selectDistinctCategories());
     }
 
     private IPage<ActivityVO> getAllActivityVO(int pageNo, int pageSize,Page<Activity> activities) {

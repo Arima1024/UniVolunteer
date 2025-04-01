@@ -16,7 +16,8 @@ import com.univolunteer.user.domain.dto.RegisterUserDto;
 import com.univolunteer.user.domain.dto.UpdatePasswordDto;
 import com.univolunteer.user.domain.entity.LoginStatistics;
 import com.univolunteer.user.domain.entity.Organization;
-import com.univolunteer.user.domain.entity.Users;
+import com.univolunteer.common.domain.entity.Users;
+import com.univolunteer.common.domain.vo.UserNotificationVO;
 import com.univolunteer.user.domain.vo.UserVo;
 import com.univolunteer.user.mapper.LoginStatisticsMapper;
 import com.univolunteer.user.mapper.OrganizationMapper;
@@ -28,7 +29,6 @@ import com.univolunteer.user.utils.PasswordUtils;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.beans.BeanUtils;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -272,5 +272,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, Users> implements U
         //获取全部loginStatistics的数据
         List<LoginStatistics> loginStatisticsList = loginStatisticsMapper.selectList(new QueryWrapper<>());
         return Result.ok(loginStatisticsList);
+    }
+
+    @Override
+    public Result getUser(Long userId) {
+        Users user = getById(userId);
+        UserNotificationVO vo = new UserNotificationVO();
+        BeanUtils.copyProperties(user, vo);
+        if (user.getOrganizationId() != null) {
+            Organization org = organizationMapper.selectById(user.getOrganizationId());
+            if (org != null) {
+                vo.setOrganizationName(org.getOrganizationName());
+            }
+        }
+        return Result.ok(vo);
     }
 }

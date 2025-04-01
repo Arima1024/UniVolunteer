@@ -1,4 +1,4 @@
-package com.univolunteer.user.domain.entity;
+package com.univolunteer.common.domain.entity;
 
 import com.univolunteer.common.enums.UserRoleEnum;
 import lombok.Data;
