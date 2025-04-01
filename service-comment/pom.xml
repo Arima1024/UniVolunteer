@@ -9,7 +9,7 @@
     </parent>
 
     <groupId>com.UniVolunteer</groupId>
-    <artifactId>service-record</artifactId>
+    <artifactId>service-comment</artifactId>
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
