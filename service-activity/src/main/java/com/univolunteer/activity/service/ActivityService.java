@@ -18,4 +18,10 @@ public interface ActivityService {
     Result getActivityCount();
 
     Result getNewActivityCount();
+
+    Result getActivity(Long activityId);
+
+    Result signUp(Long activityId);
+
+    Result signDown(Long activityId);
 }

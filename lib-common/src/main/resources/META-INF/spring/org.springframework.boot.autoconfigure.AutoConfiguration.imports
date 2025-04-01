@@ -2,3 +2,6 @@ com.univolunteer.common.config.UserContextInterceptorConfig
 com.univolunteer.common.handler.GlobalExceptionHandler
 com.univolunteer.common.aspect.AdminOnlyAspect
 com.univolunteer.common.config.MybatisPlusConfig
+com.univolunteer.common.config.JacksonConfig
+com.univolunteer.common.config.RedisConfig
+com.univolunteer.common.config.RabbitConfig

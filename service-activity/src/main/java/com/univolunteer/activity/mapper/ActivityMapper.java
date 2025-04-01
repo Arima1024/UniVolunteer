@@ -1,7 +1,7 @@
 package com.univolunteer.activity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.univolunteer.activity.domain.entity.Activity;
+import com.univolunteer.common.domain.entity.Activity;
 import org.apache.ibatis.annotations.Mapper;
 
 @Mapper

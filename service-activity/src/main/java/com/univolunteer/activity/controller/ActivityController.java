@@ -39,6 +39,11 @@ public class ActivityController {
         return activityService.createActivity(dto, file);
     }
 
+    @GetMapping("/{activityId}")
+    public Result getActivity(@PathVariable Long activityId){
+        return activityService.getActivity(activityId);
+    }
+
     @GetMapping
     public Result getActivityList(  @RequestParam(defaultValue = "1") int page,
                                     @RequestParam(defaultValue = "10") int size){
@@ -69,6 +74,16 @@ public class ActivityController {
     @GetMapping("/new/count")
     public Result getNewActivityCount(){
         return activityService.getNewActivityCount();
+    }
+
+    @PostMapping("/signUp/{activityId}")
+    public Result signUp(@PathVariable Long activityId){
+        return activityService.signUp(activityId);
+    }
+
+    @PostMapping("/signDown/{activityId}")
+    public Result signDown(@PathVariable Long activityId){
+        return activityService.signDown(activityId);
     }
 
 }

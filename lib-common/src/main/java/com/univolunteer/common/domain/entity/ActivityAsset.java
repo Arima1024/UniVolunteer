@@ -1,4 +1,4 @@
-package com.univolunteer.activity.domain.entity;
+package com.univolunteer.common.domain.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
