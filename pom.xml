@@ -26,6 +26,7 @@
         <module>service-user</module>
         <module>service-activity</module>
         <module>service-comment</module>
+        <module>service-record</module>
         <module>uv-gateway</module>
         <module>uv-api</module>
     </modules>

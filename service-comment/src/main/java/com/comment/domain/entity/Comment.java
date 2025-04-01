@@ -9,11 +9,11 @@ import java.time.LocalDateTime;
 @Data
 @TableName("comments")
 public class Comment{
-    private Integer id; // 评论ID
+    private Long id; // 评论ID
 
-    private Integer activityId; // 活动ID
+    private Long activityId; // 活动ID
 
-    private Integer userId; // 评论者用户ID
+    private Long userId; // 评论者用户ID
 
     private Integer rating; // 评分（1-5星）
 
@@ -21,4 +21,6 @@ public class Comment{
 
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime; // 评论时间
+
+    private Integer status;
 }

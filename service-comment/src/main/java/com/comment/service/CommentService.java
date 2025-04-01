@@ -6,13 +6,13 @@ import com.univolunteer.common.result.Result;
 
 public interface CommentService extends IService<Comment> {
 
-    Result getCommentByUserIdWithDescTime(Long userId, int page, int size);
+    Result getCommentByUserIdWithDescTime(int page, int size);
 
-    Result getCommentByUserIdWithHighRating(Long userId, int page, int size);
+    Result getCommentByUserIdWithHighRating(int page, int size);
 
-    Result getCommentByUserIdWithAscTime(Long userId, int page, int size);
+    Result getCommentByUserIdWithAscTime(int page, int size);
 
-    Result getCommentByUserIdWithLowRating(Long userId, int page, int size);
+    Result getCommentByUserIdWithLowRating(int page, int size);
 
     Result getCommentByActivityIdWithDescTime(Long activityId, int page, int size);
 
@@ -22,6 +22,9 @@ public interface CommentService extends IService<Comment> {
 
     Result getCommentByActivityIdWithAscTime(Long activityId, int page, int size);
 
-
     Result getAllRating();
+
+    Result getUncommentedComments(int page, int size);
+
+    Result getCommentedComments(int page, int size);
 }

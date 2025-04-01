@@ -15,6 +15,20 @@ public class CommentController{
 
     private final CommentService commentService;
 
+    //存在待评论和已评论两个状态，需要通过调用activity来返回活动信息。调用record来返回活动记录（签到时间和签退时间）
+    @GetMapping("/uncommented")
+    public Result getUncommentedComments(@RequestParam(defaultValue = "1") int page,
+                                         @RequestParam(defaultValue = "10") int size){
+
+        return commentService.getUncommentedComments(page,size);
+
+    }
+
+    @GetMapping("/commented")
+    public Result getCommentedComments(@RequestParam(defaultValue = "1") int page,
+                                       @RequestParam(defaultValue = "10") int size){
+        return commentService.getCommentedComments(page,size);
+    }
     /**
      * 用户评论查询接口，根据sortType参数决定排序方式：
      * - ascTime：按时间升序（默认）
@@ -26,14 +40,11 @@ public class CommentController{
     public Result getUserComments(@RequestParam int page,
                                   @RequestParam int size,
                                   @RequestParam(defaultValue = "ascTime") String sortType) {
-        Long userId = UserContext.getUserId();
-        SortTypeEnum sortEnum = SortTypeEnum.fromString(sortType);
-
         return switch (sortEnum) {
-            case DESC_TIME -> commentService.getCommentByUserIdWithDescTime(userId, page, size);
-            case HIGH_RATING -> commentService.getCommentByUserIdWithHighRating(userId, page, size);
-            case LOW_RATING -> commentService.getCommentByUserIdWithLowRating(userId, page, size);
-            default -> commentService.getCommentByUserIdWithAscTime(userId, page, size);
+            case DESC_TIME -> commentService.getCommentByUserIdWithDescTime(page, size);
+            case HIGH_RATING -> commentService.getCommentByUserIdWithHighRating(page, size);
+            case LOW_RATING -> commentService.getCommentByUserIdWithLowRating(page, size);
+            default -> commentService.getCommentByUserIdWithAscTime(page, size);
         };
     }
 

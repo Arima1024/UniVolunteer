@@ -10,9 +10,9 @@ import java.time.LocalDateTime;
 @Data
 @TableName("feedback")
 public class Feedback{
-    private Integer id; // 反馈ID
+    private Long id; // 反馈ID
 
-    private Integer userId; // 反馈人用户ID，可为NULL表示匿名
+    private Long userId; // 反馈人用户ID，可为NULL表示匿名
 
     private String title; // 反馈标题
 
