@@ -40,6 +40,9 @@ public class CommentController{
     public Result getUserComments(@RequestParam int page,
                                   @RequestParam int size,
                                   @RequestParam(defaultValue = "ascTime") String sortType) {
+
+        SortTypeEnum sortEnum = SortTypeEnum.fromString(sortType);
+
         return switch (sortEnum) {
             case DESC_TIME -> commentService.getCommentByUserIdWithDescTime(page, size);
             case HIGH_RATING -> commentService.getCommentByUserIdWithHighRating(page, size);
