@@ -1,4 +1,4 @@
-package com.univolunteer.common.dto;
+package com.univolunteer.common.domain.dto;
 
 import com.univolunteer.common.enums.UserRoleEnum;
 import lombok.AllArgsConstructor;
