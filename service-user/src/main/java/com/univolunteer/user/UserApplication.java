@@ -1,5 +1,6 @@
 package com.univolunteer.user;
 
+import com.univolunteer.api.config.DefaultFeignConfig;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,7 +11,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 @MapperScan("com.univolunteer.user.mapper")
 @SpringBootApplication
-@EnableFeignClients
+@EnableFeignClients(defaultConfiguration = DefaultFeignConfig.class,basePackages = "com.univolunteer.api.client")
 public class UserApplication {
 
     public static void main(String[] args) {
