@@ -6,7 +6,6 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.univolunteer.api.client.ActivityClient;
-import com.univolunteer.common.config.JacksonConfig;
 import com.univolunteer.common.context.UserContext;
 import com.univolunteer.common.domain.entity.Activity;
 import com.univolunteer.common.result.Result;
@@ -34,17 +33,8 @@ public class RegistrationServiceImpl extends ServiceImpl<RegistrationMapper, Reg
     @Override
     @Transactional
     public Result register(Long activityId) {
-        Result activityResult = activityClient.getActivity(activityId);
+        Result activityResult = activityClient.check(activityId);
         if (activityResult.getSuccess()) {
-            // 如果请求成功，提取 data（即 Activity 对象）
-            ObjectMapper objectMapper = new JacksonConfig().objectMapper();
-            Activity activity = null;            //判断是否满人
-            activity =  objectMapper.convertValue(activityResult.getData(), Activity.class);
-
-            if (activity.getCurrentSignUpCount() >= activity.getMaxVolunteers()) {
-                return Result.fail("活动已满");
-            }
-            System.out.println("UserContext.getUserId() = " + UserContext.getUserId());
             //判断是否是否报名
             List<Registration> list = lambdaQuery()
                     .eq(Registration::getActivityId, activityId)
@@ -52,10 +42,6 @@ public class RegistrationServiceImpl extends ServiceImpl<RegistrationMapper, Reg
                     .list();
             if (list!=null&&!list.isEmpty()) {
                 return Result.fail("该志愿已报名");
-            }
-            //判断是否在报名时间范围内
-            if (activity.getSignUpStartTime().isAfter(LocalDateTime.now()) || activity.getSignUpEndTime().isBefore(LocalDateTime.now())) {
-                return Result.fail("不在报名时间范围内");
             }
         } else {
             // 如果请求失败，返回错误消息
