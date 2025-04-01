@@ -1,7 +1,7 @@
 package com.univolunteer.common.interceptor;
 
 import com.univolunteer.common.context.UserContext;
-import com.univolunteer.common.dto.UserInfoDTO;
+import com.univolunteer.common.domain.dto.UserInfoDTO;
 import com.univolunteer.common.enums.UserRoleEnum;
 
 
