@@ -28,6 +28,8 @@
         <module>service-comment</module>
         <module>uv-gateway</module>
         <module>uv-api</module>
+        <module>service-registration</module>
+        <module>service-notification</module>
     </modules>
     <scm>
         <connection/>
