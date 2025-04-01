@@ -18,4 +18,7 @@ public interface ActivityClient {
 
     @PostMapping("/activity/signDown/{activityId}")
     Result signDown(@PathVariable Long activityId);
+
+    @GetMapping("/activity/check/{activityId}")
+    Result check(@PathVariable Long activityId);
 }

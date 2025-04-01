@@ -5,9 +5,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.univolunteer.common.result.Result;
 import com.univolunteer.user.domain.entity.Organization;
-import com.univolunteer.user.domain.entity.Users;
 import com.univolunteer.user.mapper.OrganizationMapper;
-import com.univolunteer.user.mapper.UserMapper;
 import com.univolunteer.user.service.OrganizationService;
 import org.springframework.stereotype.Service;
 
