@@ -22,7 +22,7 @@ public class DefaultFeignConfig {
                 // 如果不为空则放入请求头中，传递给下游微服务
                 template.header("userId", userId.toString());
                 template.header("username", UserContext.getUsername());
-                template.header("userId", UserContext.get().getRole().toString());
+                template.header("role", UserContext.get().getRole().toString());
             }
         };
     }
