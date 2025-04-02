@@ -4,18 +4,17 @@ import com.baomidou.mybatisplus.annotation.EnumValue;
 import lombok.Getter;
 
 @Getter
-public enum FeedbackStatus {
+public enum CommentStatus {
 
-    NEW(0, "新提交"),
-    ACCEPTED(1, "已受理"),
-    RESOLVED(2,"已解决");
+    UNCOMMENTED(0, "待评论"),
+    COMMENTED(1, "已评论");
 
     @EnumValue
     private final int value;
 
     private final String description;
 
-    FeedbackStatus(int value, String description) {
+    CommentStatus(int value, String description) {
         this.value = value;
         this.description = description;
     }

@@ -3,24 +3,33 @@ package com.comment.service.serviceImpl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.comment.domain.dto.RecordDTO;
 import com.comment.domain.entity.Comment;
 import com.comment.mapper.CommentMapper;
 import com.comment.service.CommentService;
+import com.univolunteer.api.client.RecordClient;
+import com.univolunteer.common.context.UserContext;
 import com.univolunteer.common.result.Result;
+import com.univolunteer.common.utils.ResultParserUtils;
+import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheConfig;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @CacheConfig(cacheNames = "comments")
+@RequiredArgsConstructor()
 public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> implements CommentService {
 
-    @Autowired
-    private CommentMapper commentMapper;
+    private final CommentMapper commentMapper;
 
     @Override
-    public Result getCommentByUserIdWithDescTime(Long userId, int page, int size) {
+    public Result getCommentByUserIdWithDescTime(int page, int size) {
+        Long userId= UserContext.getUserId();
         LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Comment::getUserId, userId);
         queryWrapper.orderByDesc(Comment::getCreateTime);
@@ -29,7 +38,8 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     }
 
     @Override
-    public Result getCommentByUserIdWithHighRating(Long userId, int page, int size) {
+    public Result getCommentByUserIdWithHighRating(int page, int size) {
+        Long userId= UserContext.getUserId();
         LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Comment::getUserId, userId).ge(Comment::getRating,3);
         Page<Comment> commentPage = new Page<>(page, size);
@@ -37,7 +47,8 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     }
 
     @Override
-    public Result getCommentByUserIdWithAscTime(Long userId, int page, int size) {
+    public Result getCommentByUserIdWithAscTime(int page, int size) {
+        Long userId= UserContext.getUserId();
         LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Comment::getUserId, userId);
         queryWrapper.orderByAsc(Comment::getCreateTime);
@@ -46,7 +57,8 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     }
 
     @Override
-    public Result getCommentByUserIdWithLowRating(Long userId, int page, int size) {
+    public Result getCommentByUserIdWithLowRating(int page, int size) {
+        Long userId= UserContext.getUserId();
         LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Comment::getUserId, userId).lt(Comment::getRating,3);
         Page<Comment> commentPage = new Page<>(page, size);
@@ -92,4 +104,33 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
 
         return Result.ok(commentMapper.countRatings());
     }
+
+    @Override
+    public List<Comment> getUncommentedComments() {
+
+        Long userId= UserContext.getUserId();
+        LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Comment::getUserId,userId).eq(Comment::getStatus,0);
+        return commentMapper.selectList(queryWrapper);
+
+    }
+
+    @Override
+    public List<Comment> getCommentedComments() {
+
+        Long userId= UserContext.getUserId();
+        LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Comment::getUserId,userId).eq(Comment::getStatus,1);
+        return commentMapper.selectList(queryWrapper);
+
+    }
+
+    @Override
+    public void autoGenerateComments(Long activityId,Long userId) {
+
+        this.save(new Comment(activityId,userId,0));
+
+    }
+
+
 }

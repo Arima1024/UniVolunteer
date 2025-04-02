@@ -6,5 +6,4 @@ import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
 public interface FeedbackMapper extends BaseMapper<Feedback> {
-    // 可扩展自定义查询方法
 }

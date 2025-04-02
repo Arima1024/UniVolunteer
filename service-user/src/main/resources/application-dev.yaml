@@ -1,4 +1,4 @@
 uv:
   db:
-    host: mysql
-    pw: 123
+    host: localhost
+    pw: a1561491577

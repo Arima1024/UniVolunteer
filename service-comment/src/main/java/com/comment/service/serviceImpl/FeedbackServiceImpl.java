@@ -10,10 +10,6 @@ import com.comment.service.FeedbackService;
 import com.univolunteer.common.result.Result;
 import org.springframework.stereotype.Service;
 
-import static com.comment.enums.FeedbackStatus.NEW;
-import static com.comment.enums.FeedbackStatus.ACCEPTED;
-import static com.comment.enums.FeedbackStatus.RESOLVED;
-
 @Service
 public class FeedbackServiceImpl extends ServiceImpl<FeedbackMapper, Feedback> implements FeedbackService {
 
@@ -31,8 +27,7 @@ public class FeedbackServiceImpl extends ServiceImpl<FeedbackMapper, Feedback> i
     public Result getFeedbackByNewStatus(int page, int size) {
 
         LambdaQueryWrapper<Feedback> queryWrapper = new LambdaQueryWrapper<Feedback>();
-        System.out.println("Querying for status: " + FeedbackStatus.NEW.getValue());
-        queryWrapper.eq(Feedback::getStatus,NEW.getValue());
+        queryWrapper.eq(Feedback::getStatus,FeedbackStatus.NEW.getValue());
         Page<Feedback> feedbackPage = new Page<>(page, size);
         return Result.ok(this.baseMapper.selectPage(feedbackPage, queryWrapper));
 
@@ -42,8 +37,7 @@ public class FeedbackServiceImpl extends ServiceImpl<FeedbackMapper, Feedback> i
     public Result getFeedbackByAcceptedStatus(int page, int size) {
 
         LambdaQueryWrapper<Feedback> queryWrapper = new LambdaQueryWrapper<Feedback>();
-        System.out.println("Querying for status: " + FeedbackStatus.ACCEPTED.getValue());
-        queryWrapper.eq(Feedback::getStatus,ACCEPTED.getValue());
+        queryWrapper.eq(Feedback::getStatus,FeedbackStatus.ACCEPTED.getValue());
         Page<Feedback> feedbackPage = new Page<>(page, size);
         return Result.ok(this.baseMapper.selectPage(feedbackPage, queryWrapper));
 
@@ -53,10 +47,24 @@ public class FeedbackServiceImpl extends ServiceImpl<FeedbackMapper, Feedback> i
     public Result getFeedbackByResolvedStatus(int page, int size) {
 
         LambdaQueryWrapper<Feedback> queryWrapper = new LambdaQueryWrapper<Feedback>();
-        queryWrapper.eq(Feedback::getStatus,RESOLVED.getValue());
+        queryWrapper.eq(Feedback::getStatus,FeedbackStatus.RESOLVED.getValue());
         Page<Feedback> feedbackPage = new Page<>(page, size);
         return Result.ok(this.baseMapper.selectPage(feedbackPage, queryWrapper));
 
     }
+
+    public Result addFeedback(Feedback feedback) {
+        // 校验反馈内容不能为空
+        if (feedback.getContent() == null || feedback.getContent().trim().isEmpty()) {
+            return Result.fail("反馈内容不能为空");
+        }
+
+        // 设置默认状态为 "新提交"
+        feedback.setStatus(FeedbackStatus.NEW);
+        boolean success =this.save(feedback);  // 调用 MyBatis-Plus 保存数据
+        return success ? Result.ok("反馈提交成功") : Result.fail("提交失败，请稍后再试");
+    }
+
+
 }
 
