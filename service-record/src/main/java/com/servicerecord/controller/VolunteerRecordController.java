@@ -39,7 +39,7 @@ public class VolunteerRecordController {
 
     /**
      * 当活动报名成功时自动添加报名记录
-     * @param activity
+     * @param
      * @return
      */
 
@@ -54,8 +54,8 @@ public class VolunteerRecordController {
     @GetMapping("/{startTime}&{finishTime}")
     public Result getRecordsByTime(@RequestParam(defaultValue = "1") int page,
                                    @RequestParam(defaultValue = "10") int size,
-                                   @PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime startTime,
-                                   @PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime finishTime) {
+                                   @PathVariable(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime startTime,
+                                   @PathVariable(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime finishTime) {
         return Result.ok(volunteerRecordService.getRecordsByTimeRange(page,size,startTime, finishTime));
     }
 
@@ -63,8 +63,8 @@ public class VolunteerRecordController {
      * 计算用户服务总时长
      */
     @GetMapping("/userTotal")
-    public Result getUserTotalTime(@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime startTime,
-                                   @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime finishTime) {
+    public Result getUserTotalTime(@RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime startTime,
+                                   @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime finishTime) {
         return Result.ok(volunteerRecordService.calculateTotalTime(startTime,finishTime));
     }
 
@@ -79,6 +79,12 @@ public class VolunteerRecordController {
                                 @RequestParam(defaultValue = "ascTime") String sortType) {
         return Result.ok(volunteerRecordService.getRecordsByClassification(page,size,classification, sortType));
     }
+
+    @GetMapping("/totalNum")
+    public Result getTotalNum(){
+        return volunteerRecordService.getTotalNums();
+    }
+
 
     @AdminOnly
     @PutMapping()

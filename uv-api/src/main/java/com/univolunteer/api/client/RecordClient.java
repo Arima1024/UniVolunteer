@@ -10,9 +10,6 @@ public interface RecordClient {
     @GetMapping("/volunteerRecord/{activityId}&{userId}")
     Result getRecord(@PathVariable("activityId") Long activityId, @PathVariable("userId") Long userId);
 
-    @GetMapping("/volunteerRecord/completedRecords")
-    Result getCompletedRecords();
-
     @PostMapping("/volunteerRecord/add")
     Result addRecord(@RequestParam Long activityId);
 

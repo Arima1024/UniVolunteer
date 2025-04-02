@@ -40,8 +40,8 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
     public Page<VolunteerRecord> getRecordsByTimeRange(int page,int size,LocalDateTime startTime, LocalDateTime finishTime) {
         Page<VolunteerRecord> records = new Page<>(page,size);
         return this.lambdaQuery()
-                .ge(VolunteerRecord::getSignInTime, startTime)
-                .le(VolunteerRecord::getSignOutTime, finishTime)
+                .ge(startTime != null, VolunteerRecord::getSignInTime, startTime)
+                .le(finishTime != null, VolunteerRecord::getSignOutTime, finishTime)
                 .page(records);
     }
 
@@ -222,14 +222,28 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
     public Double calculateTotalTime(LocalDateTime startTime, LocalDateTime finishTime) {
         Long userId = UserContext.getUserId();
         LambdaQueryWrapper<VolunteerRecord> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(VolunteerRecord::getUserId, userId)
-                .ge(VolunteerRecord::getSignInTime, startTime)
-                .le(VolunteerRecord::getSignOutTime, finishTime);
+        queryWrapper.eq(VolunteerRecord::getUserId, userId);
+        if (startTime != null) {
+            queryWrapper.ge(VolunteerRecord::getSignInTime, startTime);
+        }
+        if (finishTime != null) {
+            queryWrapper.le(VolunteerRecord::getSignOutTime, finishTime);
+        }
 
         List<VolunteerRecord> records = this.list(queryWrapper);
 
         return records.stream()
                 .mapToDouble(record -> record.getHours() != null ? record.getHours() : 0.0)
                 .sum();
+    }
+
+    @Override
+    public Result getTotalNums() {
+        int num=0;
+        Long userId=UserContext.getUserId();
+        LambdaQueryWrapper<VolunteerRecord> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(VolunteerRecord::getUserId, userId);
+        num=this.list(queryWrapper).size();
+        return Result.ok(num);
     }
 }
