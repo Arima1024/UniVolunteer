@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+
 import com.univolunteer.api.client.NotificationClient;
 import com.univolunteer.api.dto.NotificationDTO;
 import com.univolunteer.common.enums.UserRoleEnum;
@@ -175,8 +176,8 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
        BeanUtils.copyProperties(activity,activityVO);
        ActivityAsset activityAsset = activityAssetMapper.selectOne(new QueryWrapper<ActivityAsset>().eq("activity_id", activityId));
        activityVO.setImgUrl(activityAsset.getFileUrl());
-        System.out.println("activityVO = " + activityVO);
-        return Result.ok(activityVO);
+
+       return Result.ok(activityVO);
     }
 
     @Override
@@ -219,9 +220,11 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
         if (location != null && !location.isEmpty()) {
             queryWrapper.like("location", location);
         }
+
         if (UserContext.get().getRole()== UserRoleEnum.VOLUNTEER){
             queryWrapper.eq("status", 1).ge("start_time", LocalDate.now());
         }
+
         // 3. 分页查询 activities 表数据
         Page<Activity> activities = this.page(activityPage, queryWrapper);
         IPage<ActivityVO> allActivityVO = getAllActivityVO(page, size, activities);
@@ -230,6 +233,7 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
 
     @Override
     public Result getActivityListByTime(String time, int page, int size) {
+
         // 首先解析为 LocalDateTime（完整的日期时间格式）
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         LocalDateTime parsedTime = LocalDateTime.parse(time, dateTimeFormatter);
@@ -243,6 +247,7 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
         if (UserContext.get().getRole()== UserRoleEnum.VOLUNTEER){
             queryWrapper.eq("status", 1);
         }
+
         // 3. 分页查询 activities 表数据
         Page<Activity> activities = this.page(activityPage, queryWrapper);
         IPage<ActivityVO> allActivityVO = getAllActivityVO(page, size, activities);
@@ -269,9 +274,11 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
         Page<Activity> activityPage = new Page<>(page, size);
         QueryWrapper<Activity> queryWrapper = new QueryWrapper<>();
        queryWrapper.like("title", keyword);
+
        if (UserContext.get().getRole()== UserRoleEnum.VOLUNTEER){
            queryWrapper.eq("status", 1).ge("start_time", LocalDate.now());
        }
+
         Page<Activity> activities = this.page(activityPage, queryWrapper);
         IPage<ActivityVO> allActivityVO = getAllActivityVO(page, size, activities);
         return Result.ok(allActivityVO.getRecords(), allActivityVO.getTotal());
@@ -314,6 +321,7 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
         return Result.ok(activityMapper.selectDistinctCategories());
     }
 
+
     @Override
     public Result getAllActivityByVolunteer(int page, int size) {
         //只能看见审核通过的志愿和没开始的志愿
@@ -324,6 +332,7 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
         IPage<ActivityVO> allActivityVO = getAllActivityVO(page, size, activities);
         return Result.ok(allActivityVO.getRecords(), allActivityVO.getTotal());
     }
+
 
     private IPage<ActivityVO> getAllActivityVO(int pageNo, int pageSize,Page<Activity> activities) {
         // 3. 获取活动列表和资源列表

@@ -109,7 +109,9 @@ public class ActivityController {
         return activityService.getActivityListByTime(time,page,size);
     }
     //根据状态 待审核 审核通过 已结束  审核不通过 返回活动列表
+
     @GetMapping("/byTimeStatus")
+
     public Result getActivityListByStatus(@RequestParam Integer status,
                                          @RequestParam(defaultValue = "1") int page,
                                          @RequestParam(defaultValue = "10") int size){

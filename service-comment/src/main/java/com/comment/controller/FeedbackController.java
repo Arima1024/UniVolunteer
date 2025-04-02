@@ -16,11 +16,12 @@ public class FeedbackController {
     /**
      * 根据用户ID获取反馈
      */
-    @GetMapping("/user/{userId}")
-    public Result getFeedbackByUser(@PathVariable Long userId,
-                                    @RequestParam(defaultValue = "1") int page,
+
+    @GetMapping("/user")
+    public Result getFeedbackByUser(@RequestParam(defaultValue = "1") int page,
                                     @RequestParam(defaultValue = "10") int size) {
-        return feedbackService.getFeedbackByUserId(userId, page, size);
+        return feedbackService.getFeedbackByUserId(page, size);
+
     }
 
     /**

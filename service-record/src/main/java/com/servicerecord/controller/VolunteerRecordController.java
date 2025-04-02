@@ -3,6 +3,7 @@ package com.servicerecord.controller;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.servicerecord.domain.entity.VolunteerRecord;
 import com.servicerecord.service.VolunteerRecordService;
+import com.univolunteer.common.annotation.AdminOnly;
 import com.univolunteer.common.result.Result;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -31,16 +32,13 @@ public class VolunteerRecordController {
      * @return
      */
 
-    @PutMapping("signOut")
+
+    @PutMapping("/signOut")
     public Result signOut(@RequestParam Long activityId,@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime signOutTime) {
         return volunteerRecordService.signOut(activityId,signOutTime);
     }
 
-    /**
-     * 当活动报名成功时自动添加报名记录
-     * @param activityId
-     * @return
-     */
+
 
     @PostMapping("/add")
     public Result addVolunteerRecord(@RequestParam Long activityId) {
@@ -61,7 +59,9 @@ public class VolunteerRecordController {
     /**
      * 计算用户服务总时长
      */
-    @GetMapping("userTotal")
+
+    @GetMapping("/userTotal")
+
     public Result getUserTotalTime(@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime startTime,
                                    @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime finishTime) {
         return Result.ok(volunteerRecordService.calculateTotalTime(startTime,finishTime));
@@ -77,6 +77,13 @@ public class VolunteerRecordController {
                                 @RequestParam String classification,
                                 @RequestParam(defaultValue = "ascTime") String sortType) {
         return Result.ok(volunteerRecordService.getRecordsByClassification(page,size,classification, sortType));
+    }
+
+
+    @AdminOnly
+    @PutMapping()
+    public Result updateVolunteerRecord(@RequestBody VolunteerRecord volunteerRecord) {
+        return Result.ok(volunteerRecord);
     }
 
 

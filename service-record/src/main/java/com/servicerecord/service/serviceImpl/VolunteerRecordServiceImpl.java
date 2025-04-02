@@ -136,7 +136,10 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
         record.setActivityId(activity);
         record.setCompletionStatus(CompletionStatus.NOT_STARTED.getValue());
         record.setHours(0.0);
+<<<<<<< HEAD
         System.out.println("record = " + record);
+=======
+>>>>>>> origin/dev
         this.save(record);
         return Result.ok("添加成功");
     }

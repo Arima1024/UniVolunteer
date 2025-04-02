@@ -14,5 +14,7 @@ public interface NotificationService extends IService<Notification> {
 
     Result readNotification(Long id);
 
+
     Result getUnreadNotificationCount();
+
 }
