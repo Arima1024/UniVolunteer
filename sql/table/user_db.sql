@@ -1,16 +1,20 @@
+create table user_db.login_statistics
+(
+    id          int auto_increment
+        primary key,
+    login_date  datetime not null,
+    login_count int      not null
+);
+
 create table user_db.organization
 (
     organization_id   int auto_increment
         primary key,
-    organization_name varchar(100) null
+    organization_name varchar(100)      null,
+    is_school         tinyint default 1 not null,
+    constraint organization_pk
+        unique (organization_name)
 );
-
-create table user_db.user_organization
-(
-    user_id         int not null,
-    organization_id int not null
-)
-    comment '外键表';
 
 create table user_db.users
 (
@@ -24,8 +28,9 @@ create table user_db.users
     status          tinyint  default 1                 not null comment '账号状态（1=正常，0=冻结）',
     last_login_time datetime                           null comment '最后登录时间',
     create_time     datetime default CURRENT_TIMESTAMP not null comment '创建时间',
-    constraint username
-        unique (username)
+    organization_id int                                not null,
+    constraint phone
+        unique (phone)
 )
     comment '用户基本信息表';
 

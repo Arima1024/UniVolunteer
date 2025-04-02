@@ -11,8 +11,20 @@ spring:
         - id: user # 路由规则id，自定义，唯一
           uri: lb://service-user # 路由的目标服务，lb代表负载均衡，会从注册中心拉取服务列表
           predicates: # 路由断言，判断当前请求是否符合当前规则，符合则路由到目标服务
-            - Path=/user/** # 这里是以请求路径作为判断规则
+            - Path=/user/**,/organization/**
+        - id: activity
+          uri: lb://service-activity
+          predicates:
+            - Path=/activity/**
+        - id: registration
+          uri: lb://service-registration
+          predicates:
+            - Path=/registration/**
+        - id: notification
+          uri: lb://service-notification
+          predicates:
+            - Path=/notification/**
 
 jwt:
   secret: Im15U3VwZXJTZWNyZXRLZXkxMjM0NTY3ODkwQUJDREVG   # base64 编码后的 32 字符串
-  expire-time: 86400000  # 1天（毫秒）
+  expire-time: 864000000  # 1天（毫秒）

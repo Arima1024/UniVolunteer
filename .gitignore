@@ -12,6 +12,11 @@ target/
 .settings
 .springBeans
 .sts4-cache
+logs/
+*.log
+# 忽略包含密钥的配置文件
+service-activity/src/main/resources/application.yaml
+service-activity/src/main/java/com/univolunteer/activity/utils/AliOSSUtils.java
 
 ### IntelliJ IDEA ###
 .idea

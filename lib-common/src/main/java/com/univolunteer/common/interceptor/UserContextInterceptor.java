@@ -1,7 +1,7 @@
 package com.univolunteer.common.interceptor;
 
 import com.univolunteer.common.context.UserContext;
-import com.univolunteer.common.dto.UserInfoDTO;
+import com.univolunteer.common.domain.dto.UserInfoDTO;
 import com.univolunteer.common.enums.UserRoleEnum;
 
 
@@ -29,7 +29,6 @@ public class UserContextInterceptor implements HandlerInterceptor {
             UserRoleEnum roleEnum = UserRoleEnum.valueOf(role);
             UserContext.set(new UserInfoDTO(Long.valueOf(userId), username, roleEnum));
         }
-
         return true;
     }
 

@@ -22,4 +22,7 @@ public class RegisterUserDto {
 
 
     private UserRoleEnum role;
+
+
+    private String OrganizationName;
 }

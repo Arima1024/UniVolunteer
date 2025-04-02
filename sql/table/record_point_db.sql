@@ -1,4 +1,4 @@
-create table record_point_db.point_history
+create table point_history
 (
     id            int auto_increment comment '记录ID'
         primary key,
@@ -10,9 +10,9 @@ create table record_point_db.point_history
     comment '积分流水记录表';
 
 create index idx_user
-    on record_point_db.point_history (user_id);
+    on point_history (user_id);
 
-create table record_point_db.points
+create table points
 (
     user_id      int           not null comment '用户ID'
         primary key,
@@ -20,7 +20,7 @@ create table record_point_db.points
 )
     comment '用户积分表';
 
-create table record_point_db.volunteer_records
+create table volunteer_records
 (
     id                 int auto_increment comment '记录ID'
         primary key,
@@ -36,5 +36,5 @@ create table record_point_db.volunteer_records
     comment '志愿服务记录表';
 
 create index idx_user
-    on record_point_db.volunteer_records (user_id);
+    on volunteer_records (user_id);
 

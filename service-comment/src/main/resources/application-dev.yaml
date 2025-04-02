@@ -1,0 +1,11 @@
+uv:
+  db:
+    name: comment_feedback_db
+    host: localhost
+    pw: a1561491577
+
+  cloud:
+    addr: localhost:8848
+
+  rd:
+    host: localhost
