@@ -5,7 +5,9 @@ import com.comment.domain.entity.Feedback;
 import com.univolunteer.common.result.Result;
 
 public interface FeedbackService extends IService<Feedback> {
+
     Result getFeedbackByUserId(int page, int size);
+
 
     Result getFeedbackByNewStatus(int page, int size);
 

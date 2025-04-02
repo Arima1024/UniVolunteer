@@ -36,4 +36,5 @@ public class RegistrationController {
     public Result cancel(@PathVariable Long registrationId,@RequestParam String reason) {
         return registrationService.cancel(registrationId,reason);
     }
+
 }

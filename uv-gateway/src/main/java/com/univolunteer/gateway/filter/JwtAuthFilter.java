@@ -36,7 +36,8 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
     // 登录、注册等不需要校验 token 的路径
     private static final List<String> WHITE_LIST = List.of(
             "/user/login",
-            "/user/register"
+            "/user/register",
+            "/organization/school"
     );
 
     @Override
@@ -58,7 +59,7 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
         }
 
         token = token.substring(7); // 去掉 "Bearer " 前缀
-
+        log.info("JWT token: {}", token);
         try {
             Claims claims = jwtUtils.parseToken(token);
             Long userId = claims.get("userId", Long.class);

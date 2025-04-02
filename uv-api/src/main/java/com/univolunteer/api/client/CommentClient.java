@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 @FeignClient(name = "service-comment")
 public interface CommentClient {
 
+
     @PostMapping("/comments/auto-generate/{activityId}/{userId}")
     Result autoGenerateComments(@PathVariable("activityId") Long activityId, @PathVariable("userId") Long userId);
 }

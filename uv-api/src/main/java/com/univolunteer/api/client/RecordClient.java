@@ -7,13 +7,9 @@ import org.springframework.web.bind.annotation.*;
 @FeignClient("service-record")
 public interface RecordClient {
 
-    @GetMapping("/volunteerRecord/{activityId}&{userId}")
-    Result getRecord(@PathVariable("activityId") Long activityId, @PathVariable("userId") Long userId);
-
-    @GetMapping("/volunteerRecord/completedRecords")
-    Result getCompletedRecords();
-
     @PostMapping("/volunteerRecord/add")
     Result addRecord(@RequestParam Long activityId);
 
+    @GetMapping("/volunteerRecord/{activityId}&{userId}")
+    Result getRecord(@PathVariable("activityId") Long activityId, @PathVariable("userId") Long userId);
 }

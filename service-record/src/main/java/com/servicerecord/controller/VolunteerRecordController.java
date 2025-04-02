@@ -32,16 +32,13 @@ public class VolunteerRecordController {
      * @return
      */
 
+
     @PutMapping("/signOut")
     public Result signOut(@RequestParam Long activityId,@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime signOutTime) {
         return volunteerRecordService.signOut(activityId,signOutTime);
     }
 
-    /**
-     * 当活动报名成功时自动添加报名记录
-     * @param activity
-     * @return
-     */
+
 
     @PostMapping("/add")
     public Result addVolunteerRecord(@RequestParam Long activityId) {
@@ -62,7 +59,9 @@ public class VolunteerRecordController {
     /**
      * 计算用户服务总时长
      */
+
     @GetMapping("/userTotal")
+
     public Result getUserTotalTime(@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime startTime,
                                    @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime finishTime) {
         return Result.ok(volunteerRecordService.calculateTotalTime(startTime,finishTime));
@@ -80,10 +79,12 @@ public class VolunteerRecordController {
         return Result.ok(volunteerRecordService.getRecordsByClassification(page,size,classification, sortType));
     }
 
+
     @AdminOnly
     @PutMapping()
     public Result updateVolunteerRecord(@RequestBody VolunteerRecord volunteerRecord) {
         return Result.ok(volunteerRecord);
     }
+
 
 }

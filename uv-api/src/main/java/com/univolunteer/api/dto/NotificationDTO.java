@@ -8,4 +8,5 @@ public class NotificationDTO {
     private String message;
     private Long senderId;
     private Long activityId;
+    private Integer type;
 }
