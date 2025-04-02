@@ -22,5 +22,5 @@ public interface VolunteerRecordService extends IService<VolunteerRecord> {
 
     Double calculateTotalTime(LocalDateTime startTime, LocalDateTime finishTime);
 
-    Result getTotalNums();
+    Double getVolunteerTime(Long userId);
 }
