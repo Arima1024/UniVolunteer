@@ -19,7 +19,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -198,7 +200,10 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
     @Override
     public Result getActivityListByTime(String time, int page, int size) {
         //将time转换为LocalDateTime
-        LocalDateTime day = LocalDateTime.parse(time);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        // 如果你只获取日期，转为 LocalDateTime 起始时间
+        LocalDateTime day = LocalDate.parse(time).atStartOfDay(); // ✅
+
         //选择在当天开始的活动
         LocalDateTime dayStart = day.withHour(0).withMinute(0).withSecond(0).withNano(0);
         LocalDateTime dayEnd = day.withHour(23).withMinute(59).withSecond(59).withNano(999999999);

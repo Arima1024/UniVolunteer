@@ -40,5 +40,10 @@ public class NotificationController {
         return notificationService.readNotification(id);
     }
 
+    //获取某个用户未读信息数量
+    @GetMapping("/unread/count")
+    public Result getUnreadNotificationCount(){
+        return notificationService.getUnreadNotificationCount();
+    }
 
 }

@@ -6,9 +6,12 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.univolunteer.api.client.ActivityClient;
+import com.univolunteer.api.client.NotificationClient;
+import com.univolunteer.api.dto.NotificationDTO;
 import com.univolunteer.common.context.UserContext;
 import com.univolunteer.common.domain.entity.Activity;
 import com.univolunteer.common.result.Result;
+import com.univolunteer.common.utils.ResultParserUtils;
 import com.univolunteer.registration.domain.entity.Registration;
 import com.univolunteer.registration.domain.entity.RegistrationHistory;
 import com.univolunteer.registration.mapper.RegistrationHistoryMapper;
@@ -29,12 +32,13 @@ public class RegistrationServiceImpl extends ServiceImpl<RegistrationMapper, Reg
     private final RegistrationMapper registrationMapper;
     private final RegistrationHistoryMapper registrationHistoryMapper;
     private final ActivityClient activityClient;
-
+    private final NotificationClient notificationClient;
+    private final ResultParserUtils resultParserUtils;
     @Override
     @Transactional
     public Result register(Long activityId) {
-        Result activityResult = activityClient.check(activityId);
-        if (activityResult.getSuccess()) {
+        Result checkResult = activityClient.check(activityId);
+        if (checkResult.getSuccess()) {
             //判断是否是否报名
             List<Registration> list = lambdaQuery()
                     .eq(Registration::getActivityId, activityId)
@@ -45,7 +49,7 @@ public class RegistrationServiceImpl extends ServiceImpl<RegistrationMapper, Reg
             }
         } else {
             // 如果请求失败，返回错误消息
-            return Result.fail(activityResult.getErrorMsg());
+            return Result.fail(checkResult.getErrorMsg());
         }
         Registration registration = new Registration();
         Long userId = UserContext.getUserId();
@@ -60,6 +64,15 @@ public class RegistrationServiceImpl extends ServiceImpl<RegistrationMapper, Reg
         registrationHistory.setReason("等待审核");
         //插入到历史记录表
         registrationHistoryMapper.insert(registrationHistory);
+        //发送信息给招募方
+        NotificationDTO notificationDTO = new NotificationDTO();
+        notificationDTO.setActivityId(activityId);
+        notificationDTO.setSenderId(UserContext.getUserId());
+        Result activityResult = activityClient.getActivity(activityId);
+        Activity activity = resultParserUtils.parseData(activityResult, Activity.class);
+        notificationDTO.setUserId(activity.getUserId());
+        notificationDTO.setMessage("有新的报名，请前往审核");
+        notificationDTO.setType(0);
         return Result.ok("报名成功，等待审核");
     }
 
@@ -76,8 +89,12 @@ public class RegistrationServiceImpl extends ServiceImpl<RegistrationMapper, Reg
         registrationHistory.setChangeTime(LocalDateTime.now());
         registration.setStatus(status);
         if (status==1){
-            reason="审核通过";
+            reason="恭喜你审核通过";
             //需要去活动服务调用相关接口改变活动报名人数
+        }else {
+            if (reason==null||reason.isEmpty()){
+                return Result.fail("请输入拒绝原因");
+            }
         }
         registration.setApprovalTime(LocalDateTime.now());
         registration.setApproverId(UserContext.getUserId());
@@ -89,6 +106,13 @@ public class RegistrationServiceImpl extends ServiceImpl<RegistrationMapper, Reg
         registrationHistoryMapper.update(registrationHistory,updateWrapper);
         //去活动微服务里面改变对应报名人数
         activityClient.signUp(registration.getActivityId());
+        NotificationDTO notificationDTO = new NotificationDTO();
+        notificationDTO.setActivityId(registration.getActivityId());
+        notificationDTO.setSenderId(UserContext.getUserId());
+        notificationDTO.setUserId(registration.getUserId());
+        notificationDTO.setMessage(reason);
+        notificationDTO.setType(status);
+        notificationClient.sendNotification(notificationDTO);
         return Result.ok("审核成功");
     }
 
@@ -99,6 +123,9 @@ public class RegistrationServiceImpl extends ServiceImpl<RegistrationMapper, Reg
         Registration registration = getById(registrationId);
         if (registration==null){
             return Result.fail("报名记录不存在");
+        }
+        if (registration.getStatus()==1){
+            return Result.fail("报名已通过，无法取消");
         }
         //根据registrationId从历史表拿出对应记录
         RegistrationHistory registrationHistory = registrationHistoryMapper.selectOne(

@@ -73,4 +73,10 @@ public class NotificationServiceImpl extends ServiceImpl<NotificationMapper,Noti
         return updateById(byId) ? Result.ok("已读") : Result.fail("已读失败");
     }
 
+    @Override
+    public Result getUnreadNotificationCount() {
+        //获取该用户的未读消息数量
+        long count = lambdaQuery().eq(Notification::getUserId, UserContext.getUserId()).eq(Notification::getStatus, 0).count();
+        return Result.ok(Map.of("count", count));
+    }
 }
