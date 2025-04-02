@@ -4,6 +4,7 @@ import com.alibaba.cloud.commons.lang.StringUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
@@ -32,9 +33,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RequiredArgsConstructor
 @Service
@@ -76,7 +75,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, Users> implements U
 
         // 构建查询条件，查询当天的数据
         QueryWrapper<LoginStatistics> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("login_date", today);
+        queryWrapper.eq("login_date", today).eq("role", UserRoleEnum.valueOf(role));
 
         // 查询是否存在当天的记录
         LoginStatistics existingRecord = loginStatisticsMapper.selectOne(queryWrapper);
@@ -86,6 +85,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, Users> implements U
             LoginStatistics newRecord = new LoginStatistics();
             newRecord.setLoginDate(today);
             newRecord.setLoginCount(1L);
+            newRecord.setRole(UserRoleEnum.valueOf(role));
             loginStatisticsMapper.insert(newRecord);
         } else {
             // 如果当天数据存在，更新 login_count + 1
@@ -183,13 +183,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, Users> implements U
     }
 
     @Override
-    public Result getList(int page, int size) {
-        Page<Users> pageInfo = new Page<>(page, size);
-
-        this.lambdaQuery()
-                .page(pageInfo); // 正确的分页查询写法
-
-        return Result.ok(pageInfo.getRecords(), pageInfo.getTotal());
+    public Result getList(int page, int size,int role) {
+        QueryWrapper<Users> wrapper = new QueryWrapper<>();
+        wrapper.eq("role", role);
+        Page<Users> usersPage = new Page<>(page, size);
+        Page<Users> users = this.page(usersPage, wrapper);
+        IPage<UserNotificationVO> allUserVO = getAllUserVO(page, size, users);
+        return Result.ok(allUserVO.getRecords(), allUserVO.getTotal());
     }
 
     @Override
@@ -269,9 +269,20 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, Users> implements U
 
     @Override
     public Result getDailyCount() {
-        //获取全部loginStatistics的数据
-        List<LoginStatistics> loginStatisticsList = loginStatisticsMapper.selectList(new QueryWrapper<>());
-        return Result.ok(loginStatisticsList);
+        Map<String,List<LoginStatistics>> listMap=new HashMap<>();
+        //按照role分类，再按日期降序排列，获取数据
+        for (UserRoleEnum value : UserRoleEnum.values()) {
+            if (value==UserRoleEnum.ADMIN){
+                continue;
+            }
+            List<LoginStatistics> loginStatisticsList = loginStatisticsMapper.selectList(
+                    new LambdaQueryWrapper<LoginStatistics>()
+                            .eq(LoginStatistics::getRole, value.getCode())
+                            .orderByDesc(LoginStatistics::getLoginDate)
+            );
+            listMap.put(value.name(),loginStatisticsList);
+        }
+        return Result.ok(listMap);
     }
 
     @Override
@@ -286,5 +297,26 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, Users> implements U
             }
         }
         return Result.ok(vo);
+    }
+    private IPage<UserNotificationVO> getAllUserVO(int page, int size, Page<Users> users) {
+        UserNotificationVO vo = new UserNotificationVO();
+        List<UserNotificationVO> userNotificationVOList = new ArrayList<>();
+        users.getRecords().forEach(user -> {
+            BeanUtils.copyProperties(user, vo);
+            if (user.getOrganizationId() != null) {
+                Organization org = organizationMapper.selectById(user.getOrganizationId());
+                if (org != null) {
+                    vo.setOrganizationName(org.getOrganizationName());
+                }
+                userNotificationVOList.add(vo);
+                System.out.println("vo = " + vo);
+            }
+        });
+        Page<UserNotificationVO> userNotificationVOPage = new Page<>();
+        userNotificationVOPage.setRecords(userNotificationVOList);
+        userNotificationVOPage.setTotal(users.getTotal());
+        userNotificationVOPage.setPages(users.getPages());
+        userNotificationVOPage.setCurrent(users.getCurrent());
+        return userNotificationVOPage;
     }
 }

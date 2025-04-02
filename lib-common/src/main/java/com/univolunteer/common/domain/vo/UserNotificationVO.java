@@ -11,4 +11,7 @@ public class UserNotificationVO {
     private String phone;
     private String email;
     private String organizationName;
+    private LocalDateTime createTime;
+    private String status;
+    private LocalDateTime lastLoginTime;
 }

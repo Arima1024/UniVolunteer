@@ -6,8 +6,11 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
 import com.univolunteer.api.client.NotificationClient;
+import com.univolunteer.api.client.UserClient;
 import com.univolunteer.api.dto.NotificationDTO;
+import com.univolunteer.common.domain.vo.UserNotificationVO;
 import com.univolunteer.common.enums.UserRoleEnum;
+import com.univolunteer.common.utils.ResultParserUtils;
 import org.springframework.beans.BeanUtils;
 import com.univolunteer.common.domain.vo.ActivityVO;
 import com.univolunteer.common.context.UserContext;
@@ -39,7 +42,8 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
     private final ActivityAssetMapper activityAssetMapper;
     private final AliOSSUtils aliOSSUtils;
     private final NotificationClient notificationClient;
-
+    private final UserClient userClient;
+    private final ResultParserUtils resultParserUtils;
     @Override
     public Result createActivity(ActivityCreateDTO dto,MultipartFile file) {
         // 1) 先存活动基础信息
@@ -347,7 +351,7 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
         List<ActivityVO> activityVOList = activityList.stream().map(activity -> {
             // 通过 activity_id 获取对应的资源
             ActivityAsset asset = assetMap.get(activity.getId());
-
+            UserNotificationVO user = resultParserUtils.parseData(userClient.getUser(activity.getUserId()).getData(), UserNotificationVO.class);
             // 6. 封装成 ActivityVO
             ActivityVO activityVO = new ActivityVO();
             activityVO.setId(activity.getId());
@@ -364,7 +368,9 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
             activityVO.setCurrentSignUpCount(activity.getCurrentSignUpCount());
             activityVO.setSignUpStartTime(activity.getSignUpStartTime());
             activityVO.setSignUpEndTime(activity.getSignUpEndTime());
-
+            activityVO.setUsername(user.getUsername());
+            activityVO.setPhone(user.getPhone());
+            activityVO.setEmail(user.getEmail());
             // 如果有对应的资源，设置资源URL
             if (asset != null) {
                 activityVO.setImgUrl(asset.getFileUrl());  // 一个活动只有一个资源

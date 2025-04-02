@@ -55,10 +55,11 @@ public class UserController {
     @AdminOnly
     @GetMapping
     public Result getUserList(
+            @RequestParam(defaultValue = "0") int role,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        return userService.getList(page, size);
+        return userService.getList(page, size,role);
     }
 
     //获取某位用户的详细信息
