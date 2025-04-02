@@ -1,23 +1,22 @@
-package com.comment.enums;
+package com.servicerecord.enums;
 
 import com.baomidou.mybatisplus.annotation.EnumValue;
 import lombok.Getter;
 
 @Getter
-public enum FeedbackStatus {
+public enum CompletionStatus {
 
-    NEW(0, "新提交"),
-    ACCEPTED(1, "已受理"),
-    RESOLVED(2,"已解决");
+    NOT_STARTED(0, "未开展"),
+    IN_PROGRESS(1, "开展中"),
+    COMPLETED(2, "已完成"),
+    ABANDONED(3, "已放弃");
 
     @EnumValue
     private final int value;
-
     private final String description;
 
-    FeedbackStatus(int value, String description) {
+    CompletionStatus(int value, String description) {
         this.value = value;
         this.description = description;
     }
-
 }

@@ -1,11 +1,8 @@
 package com.comment.enums;
 
-import com.baomidou.mybatisplus.annotation.EnumValue;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Getter;
+import java.util.HashMap;
+import java.util.Map;
 
-@Getter
 public enum SortTypeEnum {
     ASC_TIME("ascTime"),
     DESC_TIME("descTime"),
@@ -13,18 +10,23 @@ public enum SortTypeEnum {
     LOW_RATING("lowRating");
 
     private final String value;
+    private static final Map<String, SortTypeEnum> LOOKUP_MAP = new HashMap<>();
 
-    @JsonCreator
-    public static SortTypeEnum fromString(@JsonProperty("sortType") String value) {
+    static {
         for (SortTypeEnum type : SortTypeEnum.values()) {
-            if (type.value.equalsIgnoreCase(value)) {
-                return type;
-            }
+            LOOKUP_MAP.put(type.value, type);
         }
-        throw new IllegalArgumentException("Invalid sortType: " + value);
     }
 
     SortTypeEnum(String value) {
         this.value = value;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    public static SortTypeEnum fromString(String str) {
+        return LOOKUP_MAP.getOrDefault(str, ASC_TIME); // 默认按时间升序排序
     }
 }

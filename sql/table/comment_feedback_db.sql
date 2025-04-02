@@ -1,22 +1,23 @@
-create table comment_feedback_db.comments
+create table comments
 (
     id          int auto_increment comment '评论ID'
         primary key,
     activity_id int                                not null comment '活动ID',
     user_id     int                                not null comment '评论者用户ID',
-    rating      tinyint                            not null comment '评分（1-5星）',
+    rating      tinyint                            null comment '评分（1-5星）',
     content     text                               null comment '评论内容',
-    create_time datetime default CURRENT_TIMESTAMP null comment '评论时间'
+    create_time datetime default CURRENT_TIMESTAMP null comment '评论时间',
+    status      tinyint                            null comment '0=待评价,1=已评价'
 )
     comment '活动评论表';
 
 create index idx_activity
-    on comment_feedback_db.comments (activity_id);
+    on comments (activity_id);
 
 create index idx_user
-    on comment_feedback_db.comments (user_id);
+    on comments (user_id);
 
-create table comment_feedback_db.feedback
+create table feedback
 (
     id          int auto_increment comment '反馈ID'
         primary key,
@@ -30,5 +31,4 @@ create table comment_feedback_db.feedback
     comment '平台反馈意见表';
 
 create index idx_status
-    on comment_feedback_db.feedback (status);
-
+    on feedback (status)
