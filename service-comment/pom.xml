@@ -10,8 +10,6 @@
 
     <groupId>com.UniVolunteer</groupId>
     <artifactId>service-comment</artifactId>
-    <description>service-comment</description>
-
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -31,6 +29,12 @@
         <dependency>
             <groupId>com.UniVolunteer</groupId>
             <artifactId>lib-common</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.UniVolunteer</groupId>
+            <artifactId>uv-api</artifactId>
             <version>0.0.1-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>

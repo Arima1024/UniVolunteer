@@ -8,7 +8,7 @@ public enum FeedbackStatus {
 
     NEW(0, "新提交"),
     ACCEPTED(1, "已受理"),
-    RESOLVED(2, "已解决");
+    RESOLVED(2,"已解决");
 
     @EnumValue
     private final int value;
@@ -19,4 +19,5 @@ public enum FeedbackStatus {
         this.value = value;
         this.description = description;
     }
+
 }

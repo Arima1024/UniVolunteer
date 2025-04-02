@@ -44,6 +44,12 @@ public class ActivityController {
         return activityService.getActivity(activityId);
     }
 
+    //判断是否能报名
+    @GetMapping("/check/{activityId}")
+    public Result check(@PathVariable Long activityId){
+        return activityService.check(activityId);
+    }
+
     @GetMapping
     public Result getActivityList(  @RequestParam(defaultValue = "1") int page,
                                     @RequestParam(defaultValue = "10") int size){
@@ -52,8 +58,9 @@ public class ActivityController {
 
     @AdminOnly
     @PutMapping("/status/{id}")
-    public Result updateActivityStatus(@PathVariable Long id, @RequestParam Integer status){
-        return activityService.updateActivityStatus(id,status);
+    public Result updateActivityStatus(@PathVariable Long id, @RequestParam Integer status,
+                                       @RequestParam(required = false) String reason){
+        return activityService.updateActivityStatus(id,status,reason);
     }
 
     //根据分类查询
@@ -84,6 +91,56 @@ public class ActivityController {
     @PostMapping("/signDown/{activityId}")
     public Result signDown(@PathVariable Long activityId){
         return activityService.signDown(activityId);
+    }
+
+    //根据地点返回活动列表
+    @GetMapping("/location")
+    public Result getActivityListByLocation(@RequestParam String location,
+                                            @RequestParam(defaultValue = "1") int page,
+                                            @RequestParam(defaultValue = "10") int size){
+        return activityService.getActivityListByLocation(location,page,size);
+    }
+
+    //根据时间天返回活动列表
+    @GetMapping("/time")
+    public Result getActivityListByTime(@RequestParam String time,
+                                        @RequestParam(defaultValue = "1") int page,
+                                        @RequestParam(defaultValue = "10") int size){
+        return activityService.getActivityListByTime(time,page,size);
+    }
+    //根据状态 待审核 审核通过 已结束  审核不通过 返回活动列表
+    @GetMapping("/byTimeStatus")
+    public Result getActivityListByStatus(@RequestParam Integer status,
+                                         @RequestParam(defaultValue = "1") int page,
+                                         @RequestParam(defaultValue = "10") int size){
+        return activityService.getActivityListByStatus(status,page,size);
+    }
+
+    @GetMapping("/search")
+    public Result searchActivity(@RequestParam String keyword,
+                                 @RequestParam(defaultValue = "1") int page,
+                                 @RequestParam(defaultValue = "10") int size){
+
+        return activityService.searchActivity(keyword,page,size);
+    }
+
+    @GetMapping("/admin/time")
+    public Result getActivityListByTimeAdmin(@RequestParam Integer status,
+                                            @RequestParam(defaultValue = "1") int page,
+                                            @RequestParam(defaultValue = "10") int size){
+        return activityService.getActivityListByTimeAdmin(status,page,size);
+    }
+
+    @GetMapping("/admin/status")
+    public Result getActivityListByStatusAdmin(@RequestParam Integer status,
+                                              @RequestParam(defaultValue = "1") int page,
+                                              @RequestParam(defaultValue = "10") int size){
+        return activityService.getActivityListByStatusAdmin(status,page,size);
+    }
+
+    @GetMapping("/allCategory")
+    public Result getAllCategory(){
+        return activityService.getAllCategory();
     }
 
 }

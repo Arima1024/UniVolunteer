@@ -1,5 +1,6 @@
 server:
   port: 8080
+  address: 0.0.0.0
 spring:
   application:
     name: uv-gateway
@@ -24,6 +25,14 @@ spring:
           uri: lb://service-notification
           predicates:
             - Path=/notification/**
+        - id: comment
+          uri: lb://service-comment
+          predicates:
+            - Path=/comments/**,/feedback/**
+        - id: record
+          uri: lb://service-record
+          predicates:
+            - Path=/volunteerRecord/**
 
 jwt:
   secret: Im15U3VwZXJTZWNyZXRLZXkxMjM0NTY3ODkwQUJDREVG   # base64 编码后的 32 字符串

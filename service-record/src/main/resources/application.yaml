@@ -1,0 +1,49 @@
+server:
+  port: 8091
+
+spring:
+  application:
+    name: service-record
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Shanghai
+  profiles:
+    active: dev
+  datasource:
+    url: jdbc:mysql://${uv.db.host}:3306/record_point_db?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&serverTimezone=Asia/Shanghai
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: ${uv.db.pw}
+  cloud:
+    nacos:
+      server-addr: ${uv.db.host}:8848 # nacos地址
+  data:
+    redis:
+      host: localhost   # Redis 服务器地址
+      port: 6379        # Redis 端口
+      password:         # 若无密码可留空
+      database: 0       # 选择 Redis 库，默认0
+      timeout: 6000ms   # 连接超时时间
+      lettuce:
+        pool:
+          max-active: 8   # 最大连接数
+          max-idle: 8     # 最大空闲连接数
+          min-idle: 0     # 最小空闲连接数
+          max-wait: -1ms  # 连接等待时间（-1 代表无限等待）
+
+mybatis-plus:
+  configuration:
+    default-enum-type-handler: com.baomidou.mybatisplus.core.handlers.MybatisEnumTypeHandler
+  global-config:
+    db-config:
+      update-strategy: not_null
+      id-type: auto
+
+logging:
+  level:
+    com.hmall: debug
+  pattern:
+    dateformat: HH:mm:ss:SSS
+  file:
+    path: "logs/${spring.application.name}"
+

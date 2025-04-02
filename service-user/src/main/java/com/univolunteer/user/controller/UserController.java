@@ -54,14 +54,18 @@ public class UserController {
     //查询用户
     @AdminOnly
     @GetMapping
-    public Result getOrganizationList(
+    public Result getUserList(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
         return userService.getList(page, size);
     }
 
-
+    //获取某位用户的详细信息
+    @GetMapping("/{userId}")
+    public Result getUser(@PathVariable Long userId) {
+        return userService.getUser(userId);
+    }
     //模糊查询用户
     @GetMapping("/search")
     @AdminOnly

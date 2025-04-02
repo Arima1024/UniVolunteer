@@ -1,11 +1,12 @@
 package com.comment;
 
+import com.univolunteer.api.config.DefaultFeignConfig;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 
-@EnableFeignClients
 @SpringBootApplication
+@EnableFeignClients(defaultConfiguration = DefaultFeignConfig.class,basePackages = "com.univolunteer.api.client")
 public class CommentApplication {
 
     public static void main(String[] args) {

@@ -1,5 +1,6 @@
-package com.univolunteer.activity.domain.vo;
+package com.univolunteer.common.domain.vo;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -23,7 +24,6 @@ public class ActivityVO {
 
     private LocalDateTime startTime; // 开始时间
 
-
     private LocalDateTime endTime; // 结束时间
 
 
@@ -38,7 +38,9 @@ public class ActivityVO {
     private Long currentSignUpCount; // 当前报名人数
 
     // 活动报名时间
+
     private LocalDateTime signUpStartTime;
+
     private LocalDateTime signUpEndTime;
 
     private String imgUrl;
