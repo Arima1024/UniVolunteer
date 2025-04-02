@@ -1,7 +1,10 @@
 package com.univolunteer.user.service.serviceImpl;
 
 import com.alibaba.cloud.commons.lang.StringUtils;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
@@ -12,8 +15,12 @@ import com.univolunteer.common.result.Result;
 import com.univolunteer.user.domain.dto.LoginUserDto;
 import com.univolunteer.user.domain.dto.RegisterUserDto;
 import com.univolunteer.user.domain.dto.UpdatePasswordDto;
+import com.univolunteer.user.domain.entity.LoginStatistics;
 import com.univolunteer.user.domain.entity.Organization;
-import com.univolunteer.user.domain.entity.Users;
+import com.univolunteer.common.domain.entity.Users;
+import com.univolunteer.common.domain.vo.UserNotificationVO;
+import com.univolunteer.user.domain.vo.UserVo;
+import com.univolunteer.user.mapper.LoginStatisticsMapper;
 import com.univolunteer.user.mapper.OrganizationMapper;
 import com.univolunteer.user.mapper.UserMapper;
 
@@ -22,11 +29,11 @@ import com.univolunteer.user.utils.JwtUtils;
 import com.univolunteer.user.utils.PasswordUtils;
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.Map;
+import java.util.*;
 
 @RequiredArgsConstructor
 @Service
@@ -36,6 +43,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, Users> implements U
 
     private final OrganizationMapper organizationMapper;
 
+    private final LoginStatisticsMapper loginStatisticsMapper;
 
     @Override
     public Result login(LoginUserDto loginDto) {
@@ -44,7 +52,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, Users> implements U
         Users user = lambdaQuery()
                 .eq(Users::getPhone, loginDto.getPhone())
                 .one();
-        System.out.println("***************");
         if (user == null) {
             throw new LoginException("账号不存在");
         }
@@ -63,6 +70,31 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, Users> implements U
         String role = user.getRole().name();
         // 生成 JWT
         String jwt =  "Bearer "+ jwtUtils.createToken(userId, username,user.getRole());
+        //记录登录当天日期+0点0时0分0秒
+        LocalDateTime today = LocalDateTime.now().withHour(0).withMinute(0).withSecond(0).withNano(0);
+
+        // 构建查询条件，查询当天的数据
+        QueryWrapper<LoginStatistics> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("login_date", today).eq("role", UserRoleEnum.valueOf(role));
+
+        // 查询是否存在当天的记录
+        LoginStatistics existingRecord = loginStatisticsMapper.selectOne(queryWrapper);
+
+        if (existingRecord == null) {
+            // 如果当天数据不存在，插入一条新记录，login_count 初始化为 1
+            LoginStatistics newRecord = new LoginStatistics();
+            newRecord.setLoginDate(today);
+            newRecord.setLoginCount(1L);
+            newRecord.setRole(UserRoleEnum.valueOf(role));
+            loginStatisticsMapper.insert(newRecord);
+        } else {
+            // 如果当天数据存在，更新 login_count + 1
+            UpdateWrapper<LoginStatistics> updateWrapper = new UpdateWrapper<>();
+            updateWrapper.eq("login_date", today)
+                    .set("login_count", existingRecord.getLoginCount() + 1);
+            loginStatisticsMapper.update(null, updateWrapper);
+        }
+
         return Result.ok(Map.of("token", jwt,"username",username,"role",role));
     }
 
@@ -151,13 +183,140 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, Users> implements U
     }
 
     @Override
-    public Result getList(int page, int size) {
-        Page<Users> pageInfo = new Page<>(page, size);
-
-        this.lambdaQuery()
-                .page(pageInfo); // 正确的分页查询写法
-
-        return Result.ok(pageInfo.getRecords(), pageInfo.getTotal());
+    public Result getList(int page, int size,int role) {
+        QueryWrapper<Users> wrapper = new QueryWrapper<>();
+        wrapper.eq("role", role);
+        Page<Users> usersPage = new Page<>(page, size);
+        Page<Users> users = this.page(usersPage, wrapper);
+        IPage<UserNotificationVO> allUserVO = getAllUserVO(page, size, users);
+        return Result.ok(allUserVO.getRecords(), allUserVO.getTotal());
     }
 
+    @Override
+    public Result searchUsers(String organizationName, String username, String phone, int page, int size) {
+        Page<Users> pageInfo = new Page<>(page, size);
+
+        // 构建条件
+        LambdaQueryWrapper<Users> wrapper = new LambdaQueryWrapper<>();
+
+        if (StringUtils.isNotBlank(username)) {
+            wrapper.like(Users::getUsername, username);
+        }
+
+        if (StringUtils.isNotBlank(phone)) {
+            wrapper.like(Users::getPhone, phone);
+        }
+
+        // 如果 organizationName 有值，先查 organizationId
+        if (StringUtils.isNotBlank(organizationName)) {
+            List<Organization> matchedOrgs = organizationMapper.selectList(
+                    new LambdaQueryWrapper<Organization>()
+                            .like(Organization::getOrganizationName, organizationName)
+            );
+
+            if (!matchedOrgs.isEmpty()) {
+                List<Long> orgIds = matchedOrgs.stream().map(Organization::getOrganizationId).toList();
+                wrapper.in(Users::getOrganizationId, orgIds);
+            } else {
+                // 没查到，直接返回空结果
+                return Result.ok(Collections.emptyList(), 0L);
+            }
+        }
+
+        // 分页查询
+        this.page(pageInfo, wrapper);
+
+        // 补上 organizationName 信息
+        List<UserVo> resultList = pageInfo.getRecords().stream().map(user -> {
+            UserVo vo = new UserVo();
+            BeanUtils.copyProperties(user, vo);
+
+            if (user.getOrganizationId() != null) {
+                Organization org = organizationMapper.selectById(user.getOrganizationId());
+                if (org != null) {
+                    vo.setOrganizationName(org.getOrganizationName());
+                }
+            }
+            return vo;
+        }).toList();
+
+        return Result.ok(resultList, pageInfo.getTotal());
+    }
+
+    @Override
+    public Result updateUserStatus(Long userId) {
+        Users user = getById(userId);
+        if (user == null) {
+            return Result.fail("用户不存在");
+        }
+        if (user.getStatus() == 0) {
+            user.setStatus(1L);
+        } else {
+            user.setStatus(0L);
+        }
+        updateById(user);
+        return Result.ok("用户状态更新成功");
+    }
+
+    @Override
+    public Result getVolunteerCount() {
+        //根据role字段查询出所有志愿者的数量
+        Long count = lambdaQuery()
+                .eq(Users::getRole, UserRoleEnum.VOLUNTEER)
+                .count();
+        return Result.ok(Map.of("count", count));
+    }
+
+    @Override
+    public Result getDailyCount() {
+        Map<String,List<LoginStatistics>> listMap=new HashMap<>();
+        //按照role分类，再按日期降序排列，获取数据
+        for (UserRoleEnum value : UserRoleEnum.values()) {
+            if (value==UserRoleEnum.ADMIN){
+                continue;
+            }
+            List<LoginStatistics> loginStatisticsList = loginStatisticsMapper.selectList(
+                    new LambdaQueryWrapper<LoginStatistics>()
+                            .eq(LoginStatistics::getRole, value.getCode())
+                            .orderByDesc(LoginStatistics::getLoginDate)
+            );
+            listMap.put(value.name(),loginStatisticsList);
+        }
+        return Result.ok(listMap);
+    }
+
+    @Override
+    public Result getUser(Long userId) {
+        Users user = getById(userId);
+        UserNotificationVO vo = new UserNotificationVO();
+        BeanUtils.copyProperties(user, vo);
+        if (user.getOrganizationId() != null) {
+            Organization org = organizationMapper.selectById(user.getOrganizationId());
+            if (org != null) {
+                vo.setOrganizationName(org.getOrganizationName());
+            }
+        }
+        return Result.ok(vo);
+    }
+    private IPage<UserNotificationVO> getAllUserVO(int page, int size, Page<Users> users) {
+        UserNotificationVO vo = new UserNotificationVO();
+        List<UserNotificationVO> userNotificationVOList = new ArrayList<>();
+        users.getRecords().forEach(user -> {
+            BeanUtils.copyProperties(user, vo);
+            if (user.getOrganizationId() != null) {
+                Organization org = organizationMapper.selectById(user.getOrganizationId());
+                if (org != null) {
+                    vo.setOrganizationName(org.getOrganizationName());
+                }
+                userNotificationVOList.add(vo);
+                System.out.println("vo = " + vo);
+            }
+        });
+        Page<UserNotificationVO> userNotificationVOPage = new Page<>();
+        userNotificationVOPage.setRecords(userNotificationVOList);
+        userNotificationVOPage.setTotal(users.getTotal());
+        userNotificationVOPage.setPages(users.getPages());
+        userNotificationVOPage.setCurrent(users.getCurrent());
+        return userNotificationVOPage;
+    }
 }

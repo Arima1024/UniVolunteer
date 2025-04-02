@@ -1,6 +1,6 @@
 package com.univolunteer.common.context;
 
-import com.univolunteer.common.dto.UserInfoDTO;
+import com.univolunteer.common.domain.dto.UserInfoDTO;
 
 public class UserContext {
     private static final ThreadLocal<UserInfoDTO> USER_THREAD_LOCAL = new ThreadLocal<>();

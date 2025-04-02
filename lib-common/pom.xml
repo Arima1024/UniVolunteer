@@ -18,6 +18,28 @@
         <artifactId>mybatis-plus-boot-starter</artifactId>
         <version>3.4.3</version>
     </dependency>
+    <!--openFeign-->
+    <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-starter-openfeign</artifactId>
+    </dependency>
+    <!--负载均衡器-->
+    <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-starter-loadbalancer</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-databind</artifactId>
+        <version>2.13.1</version>
+    </dependency>
+    <dependency>
+        <groupId>com.fasterxml.jackson.datatype</groupId>
+        <artifactId>jackson-datatype-jsr310</artifactId>
+        <version>2.13.1</version>
+    </dependency>
+
+
     <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-web</artifactId>
@@ -51,12 +73,16 @@
     <dependency>
         <groupId>org.aspectj</groupId>
         <artifactId>aspectjweaver</artifactId>
-        <version>1.9.6</version>
+
     </dependency>
     <dependency>
         <groupId>org.aspectj</groupId>
         <artifactId>aspectjweaver</artifactId>
         <version>1.9.20.1</version>
+    </dependency>
+    <dependency>
+        <groupId>org.springframework.amqp</groupId>
+        <artifactId>spring-amqp</artifactId>
     </dependency>
 </dependencies>
     <groupId>com.UniVolunteer</groupId>
