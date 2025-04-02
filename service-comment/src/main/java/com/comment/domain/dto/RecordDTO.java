@@ -1,14 +1,13 @@
-package com.servicerecord.domain.entity;
+package com.comment.domain.dto;
 
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.time.LocalDateTime;
 
 @Data
-@TableName("volunteer_records")
-public class VolunteerRecord {
+@AllArgsConstructor
+public class RecordDTO {
     private Long id;
     private Long userId;
     private Long activityId;
@@ -16,4 +15,5 @@ public class VolunteerRecord {
     private Integer completionStatus;
     private LocalDateTime signInTime;
     private LocalDateTime signOutTime;
+    private String organizerFeedback;
 }

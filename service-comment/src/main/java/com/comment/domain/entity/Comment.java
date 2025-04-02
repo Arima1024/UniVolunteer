@@ -1,12 +1,15 @@
 package com.comment.domain.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import com.comment.enums.CommentStatus;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Data
+@NoArgsConstructor
 @TableName("comments")
 public class Comment{
     private Long id; // 评论ID
@@ -19,8 +22,13 @@ public class Comment{
 
     private String content; // 评论内容
 
-    @TableField(fill = FieldFill.INSERT)
-    private LocalDateTime createTime; // 评论时间
+    private LocalDateTime createTime;
 
     private Integer status;
+
+    public Comment(Long activityId, Long userId,int status) {
+        this.activityId = activityId;
+        this.userId = userId;
+        this.status = status;
+    }
 }

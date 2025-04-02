@@ -1,8 +1,11 @@
 package com.comment.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.comment.domain.entity.Comment;
 import com.univolunteer.common.result.Result;
+
+import java.util.List;
 
 public interface CommentService extends IService<Comment> {
 
@@ -24,7 +27,9 @@ public interface CommentService extends IService<Comment> {
 
     Result getAllRating();
 
-    Result getUncommentedComments(int page, int size);
+    List<Comment> getUncommentedComments();
 
-    Result getCommentedComments(int page, int size);
+    List<Comment> getCommentedComments();
+
+    void autoGenerateComments(Long activityId,Long userId);
 }

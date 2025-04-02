@@ -1,10 +1,14 @@
 package com.servicerecord.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.servicerecord.domain.entity.VolunteerRecord;
 import com.servicerecord.service.VolunteerRecordService;
 import com.univolunteer.common.result.Result;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/volunteerRecord")
@@ -13,18 +17,67 @@ public class VolunteerRecordController {
 
     private final VolunteerRecordService volunteerRecordService;
 
-    //负责待开展、已结束的活动的列表，同时调用activity里面表的状态返回给前端，查找所有已完成的活动
-    //签退时间一旦到达，自动视为放弃
-    //签到改为开展状态，签退改为已结束，两者相减则为时间（判断签到时间与签退时间的规范）
+    //提供签到时间
 
-    @GetMapping()
-    public Result volunteerRecord() {
-        ;
+    @PutMapping("signIn")
+    public Result signIn(@RequestParam Long activityId,@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime signInTime) {
+        return volunteerRecordService.signIn(activityId,signInTime);
     }
 
-    @PutMapping
-    public Result update(@RequestBody VolunteerRecord volunteerRecord) {
-        return Result.ok(volunteerRecordService.updateById(volunteerRecord));
+    /**
+     * 提供签退时间，并自动计算服务时长
+     * @param activityId
+     * @param signOutTime
+     * @return
+     */
+
+    @PutMapping("signOut")
+    public Result signOut(@RequestParam Long activityId,@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime signOutTime) {
+        return volunteerRecordService.signOut(activityId,signOutTime);
     }
+
+    /**
+     * 当活动报名成功时自动添加报名记录
+     * @param activity
+     * @return
+     */
+
+    @PostMapping("/add")
+    public Result addVolunteerRecord(@RequestParam Long activity) {
+        return volunteerRecordService.addVolunteerRecord(activity);
+    }
+
+    /**
+     * 根据时间范围查询志愿记录
+     */
+    @GetMapping("/{startTime}&{finishTime}")
+    public Result getRecordsByTime(@RequestParam(defaultValue = "1") int page,
+                                   @RequestParam(defaultValue = "10") int size,
+                                   @PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime startTime,
+                                   @PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime finishTime) {
+        return Result.ok(volunteerRecordService.getRecordsByTimeRange(page,size,startTime, finishTime));
+    }
+
+    /**
+     * 计算用户服务总时长
+     */
+    @GetMapping("userTotal")
+    public Result getUserTotalTime(@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime startTime,
+                                   @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime finishTime) {
+        return Result.ok(volunteerRecordService.calculateTotalTime(startTime,finishTime));
+    }
+
+
+    /**
+     * 按分类和排序方式获取志愿记录
+     */
+    @GetMapping("/all")
+    public Result getAllRecords(@RequestParam(defaultValue = "1") int page,
+                                @RequestParam(defaultValue = "10") int size,
+                                @RequestParam String classification,
+                                @RequestParam(defaultValue = "ascTime") String sortType) {
+        return Result.ok(volunteerRecordService.getRecordsByClassification(page,size,classification, sortType));
+    }
+
 
 }

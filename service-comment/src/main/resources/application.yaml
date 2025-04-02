@@ -1,16 +1,16 @@
 server:
-  port: 8091
+  port: 8090
 
 spring:
   application:
-    name: service-record
+    name: service-comment
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: Asia/Shanghai
   profiles:
     active: dev
   datasource:
-    url: jdbc:mysql://${uv.db.host}:3306/record_point_db?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&serverTimezone=Asia/Shanghai
+    url: jdbc:mysql://${uv.db.host}:3306/comment_feedback_db?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&serverTimezone=Asia/Shanghai
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: root
     password: ${uv.db.pw}
@@ -19,7 +19,7 @@ spring:
       server-addr: ${uv.db.host}:8848 # nacos地址
   data:
     redis:
-      host: localhost   # Redis 服务器地址
+      host: localhost  # Redis 服务器地址
       port: 6379        # Redis 端口
       password:         # 若无密码可留空
       database: 0       # 选择 Redis 库，默认0
@@ -46,4 +46,3 @@ logging:
     dateformat: HH:mm:ss:SSS
   file:
     path: "logs/${spring.application.name}"
-
