@@ -7,6 +7,7 @@ import com.comment.domain.entity.Feedback;
 import com.comment.enums.FeedbackStatus;
 import com.comment.mapper.FeedbackMapper;
 import com.comment.service.FeedbackService;
+import com.univolunteer.common.context.UserContext;
 import com.univolunteer.common.result.Result;
 import org.springframework.stereotype.Service;
 
@@ -14,7 +15,9 @@ import org.springframework.stereotype.Service;
 public class FeedbackServiceImpl extends ServiceImpl<FeedbackMapper, Feedback> implements FeedbackService {
 
     @Override
-    public Result getFeedbackByUserId(Long userId, int page, int size) {
+    public Result getFeedbackByUserId(int page, int size) {
+
+        Long userId= UserContext.getUserId();
 
         LambdaQueryWrapper<Feedback> queryWrapper = new LambdaQueryWrapper<Feedback>();
         queryWrapper.eq(Feedback::getUserId, userId);

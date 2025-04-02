@@ -3,6 +3,7 @@ package com.servicerecord.controller;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.servicerecord.domain.entity.VolunteerRecord;
 import com.servicerecord.service.VolunteerRecordService;
+import com.univolunteer.common.annotation.AdminOnly;
 import com.univolunteer.common.result.Result;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -79,5 +80,10 @@ public class VolunteerRecordController {
         return Result.ok(volunteerRecordService.getRecordsByClassification(page,size,classification, sortType));
     }
 
+    @AdminOnly
+    @PutMapping()
+    public Result updateVolunteerRecord(@RequestBody VolunteerRecord volunteerRecord) {
+        return Result.ok(volunteerRecord);
+    }
 
 }
