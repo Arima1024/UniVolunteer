@@ -20,7 +20,7 @@ public class VolunteerRecordController {
 
     //提供签到时间
 
-    @PutMapping("signIn")
+    @PutMapping("/signIn")
     public Result signIn(@RequestParam Long activityId,@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime signInTime) {
         return volunteerRecordService.signIn(activityId,signInTime);
     }
@@ -32,7 +32,7 @@ public class VolunteerRecordController {
      * @return
      */
 
-    @PutMapping("signOut")
+    @PutMapping("/signOut")
     public Result signOut(@RequestParam Long activityId,@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime signOutTime) {
         return volunteerRecordService.signOut(activityId,signOutTime);
     }
@@ -44,8 +44,8 @@ public class VolunteerRecordController {
      */
 
     @PostMapping("/add")
-    public Result addVolunteerRecord(@RequestParam Long activity) {
-        return volunteerRecordService.addVolunteerRecord(activity);
+    public Result addVolunteerRecord(@RequestParam Long activityId) {
+        return volunteerRecordService.addVolunteerRecord(activityId);
     }
 
     /**
@@ -62,7 +62,7 @@ public class VolunteerRecordController {
     /**
      * 计算用户服务总时长
      */
-    @GetMapping("userTotal")
+    @GetMapping("/userTotal")
     public Result getUserTotalTime(@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime startTime,
                                    @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime finishTime) {
         return Result.ok(volunteerRecordService.calculateTotalTime(startTime,finishTime));
