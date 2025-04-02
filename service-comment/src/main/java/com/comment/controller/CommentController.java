@@ -143,7 +143,7 @@ public class CommentController{
         return commentService.getAllRating();
     }
 
-    @PostMapping("/auto-generate/{activityId}&{userId}")
+    @PostMapping("/auto-generate/{activityId}/{userId}")
     public Result autoGenerateComments(@PathVariable Long activityId,@PathVariable Long userId) {
         commentService.autoGenerateComments(activityId,userId);
         return Result.ok();

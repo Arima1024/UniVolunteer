@@ -68,7 +68,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     @Override
     public Result getCommentByActivityIdWithDescTime(Long activityId, int page, int size) {
         LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Comment::getActivityId, activityId);
+        queryWrapper.eq(Comment::getActivityId, activityId).eq(Comment::getStatus,1);
         queryWrapper.orderByDesc(Comment::getCreateTime);
         Page<Comment> commentPage = new Page<>(page, size);
         return Result.ok(commentMapper.selectPage(commentPage, queryWrapper));
@@ -77,7 +77,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     @Override
     public Result getCommentByActivityIdWithHighRatinig(Long activityId, int page, int size) {
         LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Comment::getActivityId, activityId).ge(Comment::getRating,3);
+        queryWrapper.eq(Comment::getActivityId, activityId).ge(Comment::getRating,3).eq(Comment::getStatus,1);
         Page<Comment> commentPage = new Page<>(page, size);
         return Result.ok(commentMapper.selectPage(commentPage, queryWrapper));
     }
@@ -85,7 +85,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     @Override
     public Result getCommentByActivityIdWithLowRatinig(Long activityId, int page, int size) {
         LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Comment::getActivityId, activityId).lt(Comment::getRating,3);
+        queryWrapper.eq(Comment::getActivityId, activityId).lt(Comment::getRating,3).eq(Comment::getStatus,1);
         Page<Comment> commentPage = new Page<>(page, size);
         return Result.ok(commentMapper.selectPage(commentPage, queryWrapper));
     }
@@ -93,7 +93,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     @Override
     public Result getCommentByActivityIdWithAscTime(Long activityId, int page, int size) {
         LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Comment::getActivityId, activityId);
+        queryWrapper.eq(Comment::getActivityId, activityId).eq(Comment::getStatus,1);
         queryWrapper.orderByAsc(Comment::getCreateTime);
         Page<Comment> commentPage = new Page<>(page, size);
         return Result.ok(commentMapper.selectPage(commentPage, queryWrapper));
