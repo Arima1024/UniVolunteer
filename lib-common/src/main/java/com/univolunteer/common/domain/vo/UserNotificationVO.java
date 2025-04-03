@@ -14,4 +14,6 @@ public class UserNotificationVO {
     private LocalDateTime createTime;
     private String status;
     private LocalDateTime lastLoginTime;
+    private Double hours;
+    private Long count;
 }

@@ -1,5 +1,6 @@
 package com.univolunteer.activity.service.impl;
 
+import com.alibaba.cloud.commons.lang.StringUtils;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -8,6 +9,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.univolunteer.api.client.NotificationClient;
 import com.univolunteer.api.client.UserClient;
 import com.univolunteer.api.dto.NotificationDTO;
+import com.univolunteer.common.domain.dto.VolunteerDTO;
 import com.univolunteer.common.domain.vo.UserNotificationVO;
 import com.univolunteer.common.enums.UserRoleEnum;
 import com.univolunteer.common.utils.ResultParserUtils;
@@ -335,6 +337,50 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
         Page<Activity> activities = this.page(activityPage, queryWrapper);
         IPage<ActivityVO> allActivityVO = getAllActivityVO(page, size, activities);
         return Result.ok(allActivityVO.getRecords(), allActivityVO.getTotal());
+    }
+
+    @Override
+    public Result getActivityListByAllStatus(String keyword,Integer status, Integer timeStatus, String category, int page, int size) {
+        Page<Activity> activityPage = new Page<>(page, size);
+        QueryWrapper<Activity> queryWrapper = new QueryWrapper<>();
+        System.out.println("status = " + status);
+        System.out.println("timeStatus = " + timeStatus);
+        System.out.println("category = " + category);
+        if (StringUtils.isNotBlank(keyword)){
+            queryWrapper.like("title", keyword);
+        }
+        if (status != null){
+            queryWrapper.eq("status", status);
+        }
+        if (timeStatus != null){
+            //拿到当前时间
+            LocalDateTime now = LocalDateTime.now();
+            if (timeStatus == 1) {
+                // 未开始的活动
+                queryWrapper.gt("start_time", now);
+            } else if (timeStatus == 2) {
+                // 进行中的活动：start_time <= now 且 end_time >= now
+                queryWrapper.le("start_time", now).ge("end_time", now);
+            } else if (timeStatus == 3) {
+                // 已结束的活动
+                queryWrapper.lt("end_time", now);
+            }
+        }
+        if (StringUtils.isNotBlank(category)){
+            queryWrapper.eq("category", category);
+        }
+        Page<Activity> activities = this.page(activityPage, queryWrapper);
+        IPage<ActivityVO> allActivityVO = getAllActivityVO(page, size, activities);
+        return Result.ok(allActivityVO.getRecords(), allActivityVO.getTotal());
+    }
+
+    @Override
+    public Result getActivityCountByUserId(Long userId) {
+        //使用mybatis-plus根据用户id查询对应数量
+        Long count = lambdaQuery().eq(Activity::getUserId, userId).count();
+        VolunteerDTO dto=new VolunteerDTO();
+        dto.setCount(count);
+        return Result.ok(dto);
     }
 
 

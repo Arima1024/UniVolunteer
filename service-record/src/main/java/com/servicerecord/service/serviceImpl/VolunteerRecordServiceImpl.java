@@ -10,6 +10,7 @@ import com.servicerecord.service.VolunteerRecordService;
 import com.univolunteer.api.client.ActivityClient;
 import com.univolunteer.api.client.CommentClient;
 import com.univolunteer.common.context.UserContext;
+import com.univolunteer.common.domain.dto.VolunteerDTO;
 import com.univolunteer.common.domain.entity.Activity;
 import com.univolunteer.common.result.Result;
 import com.univolunteer.common.utils.ResultParserUtils;
@@ -235,12 +236,15 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
     }
 
     @Override
-    public Double getVolunteerTime(Long userId) {
+    public VolunteerDTO getVolunteerTime(Long userId) {
         Double totalTime=0.0;
         LambdaQueryWrapper<VolunteerRecord> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(VolunteerRecord::getUserId, userId);
         List<VolunteerRecord> records = this.list(queryWrapper);
         totalTime+=records.stream().mapToDouble(record -> record.getHours()).sum();
-        return totalTime;
+        VolunteerDTO dto=new VolunteerDTO();
+        dto.setCount((long) records.size());
+        dto.setTime(totalTime);
+        return dto;
     }
 }

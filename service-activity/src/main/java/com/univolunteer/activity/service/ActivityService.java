@@ -40,4 +40,8 @@ public interface ActivityService {
     Result getAllCategory();
 
     Result getAllActivityByVolunteer(int page, int size);
+
+    Result getActivityListByAllStatus(String keyword,Integer status, Integer timeStatus, String category, int page, int size);
+
+    Result getActivityCountByUserId(Long userId);
 }
