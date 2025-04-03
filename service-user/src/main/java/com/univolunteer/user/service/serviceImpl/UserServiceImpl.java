@@ -188,7 +188,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, Users> implements U
         wrapper.eq("role", role);
         Page<Users> usersPage = new Page<>(page, size);
         Page<Users> users = this.page(usersPage, wrapper);
-        IPage<UserNotificationVO> allUserVO = getAllUserVO(page, size, users);
+        IPage<UserNotificationVO> allUserVO = getAllUserVO(page, size, users,role);
         return Result.ok(allUserVO.getRecords(), allUserVO.getTotal());
     }
 
@@ -298,7 +298,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, Users> implements U
         }
         return Result.ok(vo);
     }
-    private IPage<UserNotificationVO> getAllUserVO(int page, int size, Page<Users> users) {
+    private IPage<UserNotificationVO> getAllUserVO(int page, int size, Page<Users> users, int role) {
         UserNotificationVO vo = new UserNotificationVO();
         List<UserNotificationVO> userNotificationVOList = new ArrayList<>();
         users.getRecords().forEach(user -> {
