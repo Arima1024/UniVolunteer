@@ -14,9 +14,10 @@ public class AdminOnlyAspect {
     @Before("@annotation(com.univolunteer.common.annotation.AdminOnly)")
     public void checkAdminAccess() {
         UserInfoDTO user = UserContext.get();
-
         if (!"ADMIN".equalsIgnoreCase(String.valueOf(user.getRole()))) {
             throw new AdminException("权限不足，仅管理员可访问");
         }
     }
+
 }
+
