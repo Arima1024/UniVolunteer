@@ -233,4 +233,14 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
                 .mapToDouble(record -> record.getHours() != null ? record.getHours() : 0.0)
                 .sum();
     }
+
+    @Override
+    public Double getVolunteerTime(Long userId) {
+        Double totalTime=0.0;
+        LambdaQueryWrapper<VolunteerRecord> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(VolunteerRecord::getUserId, userId);
+        List<VolunteerRecord> records = this.list(queryWrapper);
+        totalTime+=records.stream().mapToDouble(record -> record.getHours()).sum();
+        return totalTime;
+    }
 }

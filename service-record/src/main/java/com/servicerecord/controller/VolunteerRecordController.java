@@ -86,5 +86,10 @@ public class VolunteerRecordController {
         return Result.ok(volunteerRecord);
     }
 
+    @GetMapping("/user")
+    public Result getVolunteerTime(@RequestParam Long userId) {
+        return Result.ok(volunteerRecordService.getVolunteerTime(userId));
+    }
+
 
 }
