@@ -8,10 +8,14 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
+import com.univolunteer.api.client.ActivityClient;
+import com.univolunteer.api.client.RecordClient;
 import com.univolunteer.common.context.UserContext;
+import com.univolunteer.common.domain.dto.VolunteerDTO;
 import com.univolunteer.common.enums.UserRoleEnum;
 import com.univolunteer.common.exception.LoginException;
 import com.univolunteer.common.result.Result;
+import com.univolunteer.common.utils.ResultParserUtils;
 import com.univolunteer.user.domain.dto.LoginUserDto;
 import com.univolunteer.user.domain.dto.RegisterUserDto;
 import com.univolunteer.user.domain.dto.UpdatePasswordDto;
@@ -44,6 +48,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, Users> implements U
     private final OrganizationMapper organizationMapper;
 
     private final LoginStatisticsMapper loginStatisticsMapper;
+
+    private final RecordClient recordClient;
+
+    private final ActivityClient activityClient;
+
+    private final ResultParserUtils resultParserUtils;
 
     @Override
     public Result login(LoginUserDto loginDto) {
@@ -302,6 +312,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, Users> implements U
         UserNotificationVO vo = new UserNotificationVO();
         List<UserNotificationVO> userNotificationVOList = new ArrayList<>();
         users.getRecords().forEach(user -> {
+            if (role==0){
+                VolunteerDTO dto = resultParserUtils.parseData(recordClient.getVolunteerTime(user.getId()).getData(), VolunteerDTO.class);
+                vo.setHours(dto.getTime());
+                vo.setCount(dto.getCount());
+            }
+            else if (role==1){
+                VolunteerDTO dto = resultParserUtils.parseData(recordClient.getVolunteerTime(user.getId()).getData(), VolunteerDTO.class);
+                vo.setCount(dto.getCount());
+            }
             BeanUtils.copyProperties(user, vo);
             if (user.getOrganizationId() != null) {
                 Organization org = organizationMapper.selectById(user.getOrganizationId());

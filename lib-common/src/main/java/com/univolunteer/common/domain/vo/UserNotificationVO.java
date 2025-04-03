@@ -15,5 +15,5 @@ public class UserNotificationVO {
     private String status;
     private LocalDateTime lastLoginTime;
     private Double hours;
-    private Integer count;
+    private Long count;
 }

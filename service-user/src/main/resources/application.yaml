@@ -33,7 +33,7 @@ logging:
     path: "logs/${spring.application.name}"
 jwt:
   secret: Im15U3VwZXJTZWNyZXRLZXkxMjM0NTY3ODkwQUJDREVG   # base64 编码后的 32 字符串
-  expire-time: 8640000000  # 1天（毫秒）
+  expire-time: 8640000000000000000  # 1天（毫秒）
 
 feign:
   okhttp:

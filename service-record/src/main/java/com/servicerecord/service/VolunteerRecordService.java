@@ -3,6 +3,7 @@ package com.servicerecord.service;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.servicerecord.domain.entity.VolunteerRecord;
+import com.univolunteer.common.domain.dto.VolunteerDTO;
 import com.univolunteer.common.result.Result;
 
 import java.time.LocalDateTime;
@@ -22,5 +23,5 @@ public interface VolunteerRecordService extends IService<VolunteerRecord> {
 
     Double calculateTotalTime(LocalDateTime startTime, LocalDateTime finishTime);
 
-    Double getVolunteerTime(Long userId);
+    VolunteerDTO getVolunteerTime(Long userId);
 }
