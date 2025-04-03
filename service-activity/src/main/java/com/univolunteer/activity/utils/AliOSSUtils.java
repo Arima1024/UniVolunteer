@@ -21,7 +21,7 @@ import java.util.UUID;
 @ConfigurationProperties(prefix = "aliyun.oss")
 public class AliOSSUtils {
     // 示例的OSS配置，建议通过配置文件来管理
-    private String endpoint = "";
+    private String endpoint = "m";
     private String accessKeyId = "";
     private String accessKeySecret = "";
     private String bucketName = "";

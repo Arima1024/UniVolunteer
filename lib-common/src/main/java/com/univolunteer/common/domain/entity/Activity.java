@@ -55,5 +55,7 @@ public class Activity {
 
     private LocalDateTime auditTime;
 
+    private String reason;
+
 
 }

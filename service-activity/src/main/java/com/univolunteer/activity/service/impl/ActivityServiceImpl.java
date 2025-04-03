@@ -4,6 +4,13 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+
+import com.univolunteer.api.client.NotificationClient;
+import com.univolunteer.api.client.UserClient;
+import com.univolunteer.api.dto.NotificationDTO;
+import com.univolunteer.common.domain.vo.UserNotificationVO;
+import com.univolunteer.common.enums.UserRoleEnum;
+import com.univolunteer.common.utils.ResultParserUtils;
 import org.springframework.beans.BeanUtils;
 import com.univolunteer.common.domain.vo.ActivityVO;
 import com.univolunteer.common.context.UserContext;
@@ -17,9 +24,12 @@ import com.univolunteer.activity.service.ActivityService;
 import com.univolunteer.activity.utils.AliOSSUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -31,7 +41,9 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
     private final ActivityMapper activityMapper;
     private final ActivityAssetMapper activityAssetMapper;
     private final AliOSSUtils aliOSSUtils;
-
+    private final NotificationClient notificationClient;
+    private final UserClient userClient;
+    private final ResultParserUtils resultParserUtils;
     @Override
     public Result createActivity(ActivityCreateDTO dto,MultipartFile file) {
         // 1) 先存活动基础信息
@@ -78,20 +90,39 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
     public Result getActivityList(int page,int size) {
         // 1. 创建分页对象
         Page<Activity> activityPage = new Page<>(page, size);  // pageNo 是页码，pageSize 是每页数量
+        QueryWrapper<Activity> queryWrapper = new QueryWrapper<>();
         // 2. 分页查询 activities 表数据
-        Page<Activity> activities = this.page(activityPage, new QueryWrapper<>());
+        if (UserContext.get().getRole()== UserRoleEnum.VOLUNTEER){
+            queryWrapper.eq("status", 1).ge("start_time", LocalDate.now());
+        }
+        Page<Activity> activities = this.page(activityPage, queryWrapper);
         IPage<ActivityVO> allActivityVO = getAllActivityVO(page, size, activities);
         return Result.ok(allActivityVO.getRecords(), allActivityVO.getTotal());
     }
 
+    @Transactional
     @Override
-    public Result updateActivityStatus(Long id, Integer status) {
+    public Result updateActivityStatus(Long id, Integer status, String reason) {
         //使用mybatis-plus进行更新activity里面的状态
         //1.先获取activity
         Activity activity = getById(id);
+        if (status==2){
+            if (reason==null)
+                return Result.fail("请输入拒绝原因");
+        }else {
+            reason="审核通过";
+        }
+        NotificationDTO notificationDTO = new NotificationDTO();
+        notificationDTO.setUserId(activity.getUserId());
+        notificationDTO.setMessage(reason);
+        notificationDTO.setActivityId(id);
+        notificationDTO.setType(status);
+        notificationDTO.setSenderId(UserContext.getUserId());
+        notificationClient.sendNotification(notificationDTO);
         //2.更新
         activity.setStatus(status);
         activity.setAuditTime(LocalDateTime.now());
+        activity.setReason(reason);
         updateById(activity);
         return Result.ok("活动状态更新成功");
     }
@@ -104,6 +135,9 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
         QueryWrapper<Activity> queryWrapper = new QueryWrapper<>();
         if (category != null && !category.isEmpty()) {
             queryWrapper.eq("category", category);  // 根据 category 字段过滤
+        }
+        if (UserContext.get().getRole()== UserRoleEnum.VOLUNTEER){
+            queryWrapper.eq("status", 1).ge("start_time", LocalDate.now());
         }
         // 3. 分页查询 activities 表数据
         Page<Activity> activities = this.page(activityPage, queryWrapper);
@@ -146,6 +180,7 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
        BeanUtils.copyProperties(activity,activityVO);
        ActivityAsset activityAsset = activityAssetMapper.selectOne(new QueryWrapper<ActivityAsset>().eq("activity_id", activityId));
        activityVO.setImgUrl(activityAsset.getFileUrl());
+
        return Result.ok(activityVO);
     }
 
@@ -189,6 +224,11 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
         if (location != null && !location.isEmpty()) {
             queryWrapper.like("location", location);
         }
+
+        if (UserContext.get().getRole()== UserRoleEnum.VOLUNTEER){
+            queryWrapper.eq("status", 1).ge("start_time", LocalDate.now());
+        }
+
         // 3. 分页查询 activities 表数据
         Page<Activity> activities = this.page(activityPage, queryWrapper);
         IPage<ActivityVO> allActivityVO = getAllActivityVO(page, size, activities);
@@ -197,14 +237,21 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
 
     @Override
     public Result getActivityListByTime(String time, int page, int size) {
-        //将time转换为LocalDateTime
-        LocalDateTime day = LocalDateTime.parse(time);
-        //选择在当天开始的活动
-        LocalDateTime dayStart = day.withHour(0).withMinute(0).withSecond(0).withNano(0);
-        LocalDateTime dayEnd = day.withHour(23).withMinute(59).withSecond(59).withNano(999999999);
+
+        // 首先解析为 LocalDateTime（完整的日期时间格式）
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime parsedTime = LocalDateTime.parse(time, dateTimeFormatter);
+
+// 提取日期，并设置为当天的起止时间
+        LocalDateTime dayStart = parsedTime.toLocalDate().atStartOfDay(); // 2025-04-10 00:00:00
+        LocalDateTime dayEnd = parsedTime.toLocalDate().atTime(23, 59, 59, 999999999);
         Page<Activity> activityPage = new Page<>(page, size);
         QueryWrapper<Activity> queryWrapper = new QueryWrapper<>();
         queryWrapper.between("start_time", dayStart, dayEnd);
+        if (UserContext.get().getRole()== UserRoleEnum.VOLUNTEER){
+            queryWrapper.eq("status", 1);
+        }
+
         // 3. 分页查询 activities 表数据
         Page<Activity> activities = this.page(activityPage, queryWrapper);
         IPage<ActivityVO> allActivityVO = getAllActivityVO(page, size, activities);
@@ -231,6 +278,11 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
         Page<Activity> activityPage = new Page<>(page, size);
         QueryWrapper<Activity> queryWrapper = new QueryWrapper<>();
        queryWrapper.like("title", keyword);
+
+       if (UserContext.get().getRole()== UserRoleEnum.VOLUNTEER){
+           queryWrapper.eq("status", 1).ge("start_time", LocalDate.now());
+       }
+
         Page<Activity> activities = this.page(activityPage, queryWrapper);
         IPage<ActivityVO> allActivityVO = getAllActivityVO(page, size, activities);
         return Result.ok(allActivityVO.getRecords(), allActivityVO.getTotal());
@@ -273,6 +325,19 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
         return Result.ok(activityMapper.selectDistinctCategories());
     }
 
+
+    @Override
+    public Result getAllActivityByVolunteer(int page, int size) {
+        //只能看见审核通过的志愿和没开始的志愿
+        Page<Activity> activityPage = new Page<>(page, size);
+        QueryWrapper<Activity> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("status", 1).gt("start_time", LocalDateTime.now());
+        Page<Activity> activities = this.page(activityPage, queryWrapper);
+        IPage<ActivityVO> allActivityVO = getAllActivityVO(page, size, activities);
+        return Result.ok(allActivityVO.getRecords(), allActivityVO.getTotal());
+    }
+
+
     private IPage<ActivityVO> getAllActivityVO(int pageNo, int pageSize,Page<Activity> activities) {
         // 3. 获取活动列表和资源列表
         List<Activity> activityList = activities.getRecords();  // 获取分页结果中的记录
@@ -286,7 +351,7 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
         List<ActivityVO> activityVOList = activityList.stream().map(activity -> {
             // 通过 activity_id 获取对应的资源
             ActivityAsset asset = assetMap.get(activity.getId());
-
+            UserNotificationVO user = resultParserUtils.parseData(userClient.getUser(activity.getUserId()).getData(), UserNotificationVO.class);
             // 6. 封装成 ActivityVO
             ActivityVO activityVO = new ActivityVO();
             activityVO.setId(activity.getId());
@@ -303,7 +368,9 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
             activityVO.setCurrentSignUpCount(activity.getCurrentSignUpCount());
             activityVO.setSignUpStartTime(activity.getSignUpStartTime());
             activityVO.setSignUpEndTime(activity.getSignUpEndTime());
-
+            activityVO.setUsername(user.getUsername());
+            activityVO.setPhone(user.getPhone());
+            activityVO.setEmail(user.getEmail());
             // 如果有对应的资源，设置资源URL
             if (asset != null) {
                 activityVO.setImgUrl(asset.getFileUrl());  // 一个活动只有一个资源

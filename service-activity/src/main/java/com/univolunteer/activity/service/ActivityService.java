@@ -4,14 +4,12 @@ import com.univolunteer.common.result.Result;
 import com.univolunteer.activity.domain.dto.ActivityCreateDTO;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
-
 public interface ActivityService {
     Result createActivity(ActivityCreateDTO dto, MultipartFile file);
 
     Result getActivityList(int page,int size);
 
-    Result updateActivityStatus(Long id, Integer status);
+    Result updateActivityStatus(Long id, Integer status, String reason);
 
     Result getActivityListByCategory(String category,int page,int size);
 
@@ -40,4 +38,6 @@ public interface ActivityService {
     Result getActivityListByStatusAdmin(Integer status, int page, int size);
 
     Result getAllCategory();
+
+    Result getAllActivityByVolunteer(int page, int size);
 }

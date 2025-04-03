@@ -41,4 +41,10 @@ public class NotificationController {
     }
 
 
+    @GetMapping("/unread/count")
+    public Result getUnreadNotificationCount(){
+        return notificationService.getUnreadNotificationCount();
+    }
+
+
 }

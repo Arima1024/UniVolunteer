@@ -45,4 +45,10 @@ public class ActivityVO {
 
     private String imgUrl;
 
+    private String username;
+
+    private String phone;
+
+    private String email;
+
 }
