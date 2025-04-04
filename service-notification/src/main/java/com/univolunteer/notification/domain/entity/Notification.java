@@ -33,10 +33,8 @@ public class Notification {
 
     @TableField("activity_id")  // 映射数据库中的 create_time
     private Long activityId;
-<<<<<<< HEAD
 
     @TableField("type")  // 映射数据库中的 create_time
     private Integer type;
-=======
->>>>>>> origin/dev
+
 }

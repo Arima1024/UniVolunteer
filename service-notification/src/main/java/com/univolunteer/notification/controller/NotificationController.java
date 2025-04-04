@@ -2,6 +2,7 @@ package com.univolunteer.notification.controller;
 
 import com.univolunteer.api.dto.NotificationDTO;
 import com.univolunteer.common.result.Result;
+import com.univolunteer.notification.domain.entity.Announcement;
 import com.univolunteer.notification.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -46,5 +47,17 @@ public class NotificationController {
         return notificationService.getUnreadNotificationCount();
     }
 
+
+    //管理员发送公告
+    @PostMapping("/announcement")
+    public Result sendAnnouncement(@RequestBody Announcement announcement){
+        return notificationService.sendAnnouncement(announcement);
+    }
+
+    //获取公告
+    @GetMapping("/announcement")
+    public Result getAnnouncement(){
+        return notificationService.getAnnouncement();
+    }
 
 }
