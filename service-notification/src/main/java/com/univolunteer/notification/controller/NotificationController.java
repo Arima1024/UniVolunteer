@@ -60,4 +60,8 @@ public class NotificationController {
         return notificationService.getAnnouncement();
     }
 
+    @GetMapping("/draft")
+   public Result getDraft(){
+       return notificationService.getDraft();
+   }
 }

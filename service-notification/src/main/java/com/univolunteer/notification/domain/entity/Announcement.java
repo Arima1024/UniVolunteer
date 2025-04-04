@@ -23,7 +23,7 @@ public class Announcement {
     private String content;
 
     // 接收角色
-    private String targetRole;
+    private Integer targetRole;
 
     // 发布状态（0=草稿，1=发布）
     private Integer status;
@@ -32,4 +32,7 @@ public class Announcement {
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime publishTime;
 
+    private LocalDateTime endTime;
+
+    private Long userId;
 }

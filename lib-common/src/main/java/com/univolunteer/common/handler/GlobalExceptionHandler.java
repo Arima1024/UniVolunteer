@@ -47,9 +47,9 @@ public class GlobalExceptionHandler {
         return Result.fail(ex.getMessage());
     }
 
-    @ExceptionHandler(RuntimeException.class)
-    public Result runtimeException(RuntimeException ex) {
-        return Result.fail("服务器异常");
-    }
+//    @ExceptionHandler(RuntimeException.class)
+//    public Result runtimeException(RuntimeException ex) {
+//        return Result.fail("服务器异常");
+//    }
 
 }

@@ -1,5 +1,6 @@
 package com.univolunteer.notification.service.serviceImpl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.univolunteer.api.client.ActivityClient;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -91,13 +93,40 @@ public class NotificationServiceImpl extends ServiceImpl<NotificationMapper,Noti
     @Override
     public Result sendAnnouncement(Announcement announcement) {
         announcement.setPublishTime(LocalDateTime.now());
+        announcement.setUserId(UserContext.getUserId());
         announcementsMapper.insert(announcement);
-        return Result.ok("发送公告成功");
+        if (announcement.getStatus() == 1){
+            return Result.ok("发送公告成功");
+        }
+       if (announcement.getStatus()==0){
+           return Result.ok("保存草稿成功");
+       }
+       return Result.fail("发送公告失败");
     }
 
     @Override
     public Result getAnnouncement() {
-        return null;
+        //时间要在publishTime和endTime之间的，并且role是对应的，status是1的
+        QueryWrapper<Announcement> queryWrapper = new QueryWrapper<>();
+        queryWrapper.le("publish_time", LocalDateTime.now())
+                .ge("end_time", LocalDateTime.now())
+                .eq("target_role", UserContext.get().getRole().getCode())
+                .eq("status", 1);
+        List<Announcement> announcements = announcementsMapper.selectList(queryWrapper);
+        return Result.ok(announcements);
+    }
+
+    @Override
+    public Result getDraft() {
+        //使用mybatis-plus构造查询条件，找到status=0还有userId
+       QueryWrapper<Announcement> queryWrapper = new QueryWrapper<>();
+       queryWrapper.eq("user_id", UserContext.getUserId()).eq("status", 0);
+        List<Announcement> announcements = announcementsMapper.selectList(queryWrapper);
+        //删除草稿
+        announcements.forEach(announcement -> {
+            announcementsMapper.deleteById(announcement.getId());
+        });
+        return Result.ok(announcements);
     }
 
 }
