@@ -21,4 +21,6 @@ public interface NotificationService extends IService<Notification> {
     Result sendAnnouncement(Announcement announcement);
 
     Result getAnnouncement();
+
+    Result getDraft();
 }
