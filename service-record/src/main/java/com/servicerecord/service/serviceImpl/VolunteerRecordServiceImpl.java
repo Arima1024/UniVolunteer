@@ -94,6 +94,9 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
         for (VolunteerRecord record : records) {
             // 这里可以从 Activity 表获取活动开始和结束时间
             Activity activity = resultParserUtils.parseData(activityClient.getActivity(record.getActivityId()).getData(),Activity.class);
+            if (activity == null) {
+                continue;
+            }
             LocalDateTime activityStartTime = activity.getStartTime(); // 活动计划开始时间
             LocalDateTime activityEndTime = activity.getEndTime(); // 活动计划结束时间
 
