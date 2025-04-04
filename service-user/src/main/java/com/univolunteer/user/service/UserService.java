@@ -18,7 +18,7 @@ public interface UserService extends IService<Users> {
 
     Result resetPasswordById(Long userId);
 
-    Result getList(int page, int size);
+    Result getList(int page, int size,int role);
 
 
     Result searchUsers(String organizationName, String username, String phone, int page, int size);

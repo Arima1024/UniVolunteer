@@ -140,9 +140,25 @@ public class ActivityController {
         return activityService.getActivityListByStatusAdmin(status,page,size);
     }
 
+    @GetMapping("/admin/allStatus")
+    public Result getActivityListByAllStatus(@RequestParam(required = false) String keyword,
+                                             @RequestParam(required = false) Integer status,
+                                             @RequestParam(required = false) Integer timeStatus,
+                                             @RequestParam(required = false) String category,
+                                             @RequestParam(defaultValue = "1") int page,
+                                             @RequestParam(defaultValue = "10") int size){
+        return activityService.getActivityListByAllStatus(keyword,status,timeStatus,category,page,size);
+    }
+
+
     @GetMapping("/allCategory")
     public Result getAllCategory(){
         return activityService.getAllCategory();
+    }
+
+    @GetMapping("/countByUserId")
+    public Result getActivityCountByUserId(@RequestParam Long userId){
+        return activityService.getActivityCountByUserId(userId);
     }
 
 }

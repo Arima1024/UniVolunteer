@@ -1,13 +1,18 @@
 package com.univolunteer.activity.service.impl;
 
+import com.alibaba.cloud.commons.lang.StringUtils;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
 import com.univolunteer.api.client.NotificationClient;
+import com.univolunteer.api.client.UserClient;
 import com.univolunteer.api.dto.NotificationDTO;
+import com.univolunteer.common.domain.dto.VolunteerDTO;
+import com.univolunteer.common.domain.vo.UserNotificationVO;
 import com.univolunteer.common.enums.UserRoleEnum;
+import com.univolunteer.common.utils.ResultParserUtils;
 import org.springframework.beans.BeanUtils;
 import com.univolunteer.common.domain.vo.ActivityVO;
 import com.univolunteer.common.context.UserContext;
@@ -39,7 +44,8 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
     private final ActivityAssetMapper activityAssetMapper;
     private final AliOSSUtils aliOSSUtils;
     private final NotificationClient notificationClient;
-
+    private final UserClient userClient;
+    private final ResultParserUtils resultParserUtils;
     @Override
     public Result createActivity(ActivityCreateDTO dto,MultipartFile file) {
         // 1) 先存活动基础信息
@@ -333,6 +339,50 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
         return Result.ok(allActivityVO.getRecords(), allActivityVO.getTotal());
     }
 
+    @Override
+    public Result getActivityListByAllStatus(String keyword,Integer status, Integer timeStatus, String category, int page, int size) {
+        Page<Activity> activityPage = new Page<>(page, size);
+        QueryWrapper<Activity> queryWrapper = new QueryWrapper<>();
+        System.out.println("status = " + status);
+        System.out.println("timeStatus = " + timeStatus);
+        System.out.println("category = " + category);
+        if (StringUtils.isNotBlank(keyword)){
+            queryWrapper.like("title", keyword);
+        }
+        if (status != null){
+            queryWrapper.eq("status", status);
+        }
+        if (timeStatus != null){
+            //拿到当前时间
+            LocalDateTime now = LocalDateTime.now();
+            if (timeStatus == 1) {
+                // 未开始的活动
+                queryWrapper.gt("start_time", now);
+            } else if (timeStatus == 2) {
+                // 进行中的活动：start_time <= now 且 end_time >= now
+                queryWrapper.le("start_time", now).ge("end_time", now);
+            } else if (timeStatus == 3) {
+                // 已结束的活动
+                queryWrapper.lt("end_time", now);
+            }
+        }
+        if (StringUtils.isNotBlank(category)){
+            queryWrapper.eq("category", category);
+        }
+        Page<Activity> activities = this.page(activityPage, queryWrapper);
+        IPage<ActivityVO> allActivityVO = getAllActivityVO(page, size, activities);
+        return Result.ok(allActivityVO.getRecords(), allActivityVO.getTotal());
+    }
+
+    @Override
+    public Result getActivityCountByUserId(Long userId) {
+        //使用mybatis-plus根据用户id查询对应数量
+        Long count = lambdaQuery().eq(Activity::getUserId, userId).count();
+        VolunteerDTO dto=new VolunteerDTO();
+        dto.setCount(count);
+        return Result.ok(dto);
+    }
+
 
     private IPage<ActivityVO> getAllActivityVO(int pageNo, int pageSize,Page<Activity> activities) {
         // 3. 获取活动列表和资源列表
@@ -347,7 +397,7 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
         List<ActivityVO> activityVOList = activityList.stream().map(activity -> {
             // 通过 activity_id 获取对应的资源
             ActivityAsset asset = assetMap.get(activity.getId());
-
+            UserNotificationVO user = resultParserUtils.parseData(userClient.getUser(activity.getUserId()).getData(), UserNotificationVO.class);
             // 6. 封装成 ActivityVO
             ActivityVO activityVO = new ActivityVO();
             activityVO.setId(activity.getId());
@@ -364,7 +414,9 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
             activityVO.setCurrentSignUpCount(activity.getCurrentSignUpCount());
             activityVO.setSignUpStartTime(activity.getSignUpStartTime());
             activityVO.setSignUpEndTime(activity.getSignUpEndTime());
-
+            activityVO.setUsername(user.getUsername());
+            activityVO.setPhone(user.getPhone());
+            activityVO.setEmail(user.getEmail());
             // 如果有对应的资源，设置资源URL
             if (asset != null) {
                 activityVO.setImgUrl(asset.getFileUrl());  // 一个活动只有一个资源
