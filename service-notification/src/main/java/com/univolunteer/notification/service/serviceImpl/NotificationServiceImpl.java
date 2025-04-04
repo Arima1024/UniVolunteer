@@ -12,8 +12,10 @@ import com.univolunteer.common.domain.vo.UserNotificationVO;
 import com.univolunteer.common.result.Result;
 
 import com.univolunteer.common.utils.ResultParserUtils;
+import com.univolunteer.notification.domain.entity.Announcement;
 import com.univolunteer.notification.domain.entity.Notification;
 import com.univolunteer.notification.domain.po.NotificationDetail;
+import com.univolunteer.notification.mapper.AnnouncementsMapper;
 import com.univolunteer.notification.mapper.NotificationMapper;
 import com.univolunteer.notification.service.NotificationService;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +34,8 @@ public class NotificationServiceImpl extends ServiceImpl<NotificationMapper,Noti
     private final UserClient userClient;
 
     private final ResultParserUtils resultParserUtils;
+
+    private final AnnouncementsMapper announcementsMapper;
 
 
     @Override
@@ -82,6 +86,18 @@ public class NotificationServiceImpl extends ServiceImpl<NotificationMapper,Noti
         //获取该用户的未读消息数量
         long count = lambdaQuery().eq(Notification::getUserId, UserContext.getUserId()).eq(Notification::getStatus, 0).count();
         return Result.ok(Map.of("count", count));
+    }
+
+    @Override
+    public Result sendAnnouncement(Announcement announcement) {
+        announcement.setPublishTime(LocalDateTime.now());
+        announcementsMapper.insert(announcement);
+        return Result.ok("发送公告成功");
+    }
+
+    @Override
+    public Result getAnnouncement() {
+        return null;
     }
 
 }
