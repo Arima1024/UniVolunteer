@@ -193,7 +193,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, Users> implements U
     }
 
     @Override
-    public Result getList(int page, int size,int role) {
+    public Result getList(int role,int page, int size) {
         QueryWrapper<Users> wrapper = new QueryWrapper<>();
         wrapper.eq("role", role);
         Page<Users> usersPage = new Page<>(page, size);
@@ -203,11 +203,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, Users> implements U
     }
 
     @Override
-    public Result searchUsers(String organizationName, String username, String phone, int page, int size) {
+    public Result searchUsers(Integer role, String organizationName, String username, String phone, int page, int size) {
         Page<Users> pageInfo = new Page<>(page, size);
 
         // 构建条件
         LambdaQueryWrapper<Users> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Users::getRole, role);
 
         if (StringUtils.isNotBlank(username)) {
             wrapper.like(Users::getUsername, username);
@@ -239,6 +240,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, Users> implements U
         // 补上 organizationName 信息
         List<UserVo> resultList = pageInfo.getRecords().stream().map(user -> {
             UserVo vo = new UserVo();
+            if (role==0){
+                VolunteerDTO dto = resultParserUtils.parseData(recordClient.getVolunteerTime(user.getId()).getData(), VolunteerDTO.class);
+                vo.setHours(dto.getTime());
+                vo.setCount(dto.getCount());
+            }
+            if (role==1){
+                VolunteerDTO dto = resultParserUtils.parseData(activityClient.getActivityCountByUserId(user.getId()).getData(), VolunteerDTO.class);
+                vo.setCount(dto.getCount());
+            }
             BeanUtils.copyProperties(user, vo);
 
             if (user.getOrganizationId() != null) {
@@ -260,9 +270,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, Users> implements U
             return Result.fail("用户不存在");
         }
         if (user.getStatus() == 0) {
-            user.setStatus(1L);
+            user.setStatus(1);
         } else {
-            user.setStatus(0L);
+            user.setStatus(0);
         }
         updateById(user);
         return Result.ok("用户状态更新成功");
@@ -298,6 +308,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, Users> implements U
     @Override
     public Result getUser(Long userId) {
         Users user = getById(userId);
+        if (user == null) {
+            return Result.fail("用户不存在");
+        }
         UserNotificationVO vo = new UserNotificationVO();
         BeanUtils.copyProperties(user, vo);
         if (user.getOrganizationId() != null) {
@@ -309,9 +322,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, Users> implements U
         return Result.ok(vo);
     }
     private IPage<UserNotificationVO> getAllUserVO(int page, int size, Page<Users> users, int role) {
-        UserNotificationVO vo = new UserNotificationVO();
         List<UserNotificationVO> userNotificationVOList = new ArrayList<>();
         users.getRecords().forEach(user -> {
+            UserNotificationVO vo = new UserNotificationVO();
             if (role==0){
                 VolunteerDTO dto = resultParserUtils.parseData(recordClient.getVolunteerTime(user.getId()).getData(), VolunteerDTO.class);
                 vo.setHours(dto.getTime());
@@ -332,6 +345,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, Users> implements U
             }
         });
         Page<UserNotificationVO> userNotificationVOPage = new Page<>();
+        System.out.println("userNotificationVOList = " + userNotificationVOList);
         userNotificationVOPage.setRecords(userNotificationVOList);
         userNotificationVOPage.setTotal(users.getTotal());
         userNotificationVOPage.setPages(users.getPages());

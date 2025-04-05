@@ -16,4 +16,6 @@ public class UserVo {
     private String organizationName;
     private LocalDateTime lastLoginTime;
     private LocalDateTime createTime;
+    private Double hours;
+    private Long count;
 }

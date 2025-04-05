@@ -35,6 +35,10 @@ spring:
           uri: lb://service-record
           predicates:
             - Path=/volunteerRecord/**
+        - id: log
+          uri: lb://service-log
+          predicates:
+            - Path=/log/**
 
 jwt:
   secret: Im15U3VwZXJTZWNyZXRLZXkxMjM0NTY3ODkwQUJDREVG   # base64 编码后的 32 字符串

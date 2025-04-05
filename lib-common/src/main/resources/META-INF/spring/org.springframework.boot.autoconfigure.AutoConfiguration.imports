@@ -6,5 +6,8 @@ com.univolunteer.common.config.RedisConfig
 com.univolunteer.common.config.RabbitConfig
 com.univolunteer.common.config.AppConfig
 com.univolunteer.common.config.JacksonConfig
+com.univolunteer.common.aspect.RecruiterOnlyAspect
+com.univolunteer.common.aspect.VolunteerOnlyAspect
+
 
 

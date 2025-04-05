@@ -59,7 +59,7 @@ public class UserController {
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        return userService.getList(page, size,role);
+        return userService.getList(role,page, size);
     }
 
     //获取某位用户的详细信息
@@ -71,13 +71,14 @@ public class UserController {
     @GetMapping("/search")
     @AdminOnly
     public Result searchUsers(
+            @RequestParam(required = false) Integer role,
             @RequestParam(required = false) String organizationName,
             @RequestParam(required = false) String username,
             @RequestParam(required = false) String phone,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        return userService.searchUsers(organizationName, username, phone, page, size);
+        return userService.searchUsers(role,organizationName, username, phone, page, size);
     }
 
     @AdminOnly
