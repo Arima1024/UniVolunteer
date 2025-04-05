@@ -6,10 +6,12 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
+import com.univolunteer.api.client.LogClient;
 import com.univolunteer.api.client.NotificationClient;
 import com.univolunteer.api.client.UserClient;
 import com.univolunteer.api.dto.NotificationDTO;
 import com.univolunteer.common.domain.dto.VolunteerDTO;
+import com.univolunteer.common.domain.entity.AuditLog;
 import com.univolunteer.common.domain.vo.UserNotificationVO;
 import com.univolunteer.common.enums.UserRoleEnum;
 import com.univolunteer.common.utils.ResultParserUtils;
@@ -46,6 +48,7 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
     private final NotificationClient notificationClient;
     private final UserClient userClient;
     private final ResultParserUtils resultParserUtils;
+    private final LogClient logClient;
     @Override
     public Result createActivity(ActivityCreateDTO dto,MultipartFile file) {
         // 1) 先存活动基础信息
@@ -107,12 +110,19 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
     public Result updateActivityStatus(Long id, Integer status, String reason) {
         //使用mybatis-plus进行更新activity里面的状态
         //1.先获取activity
+        AuditLog auditLog=new AuditLog();
+        auditLog.setUserId(UserContext.getUserId());
+        auditLog.setAction("审核活动");
+        auditLog.setTimestamp(LocalDateTime.now());
         Activity activity = getById(id);
         if (status==2){
             if (reason==null)
                 return Result.fail("请输入拒绝原因");
+            auditLog.setRemark("活动审核未通过");
         }else {
+
             reason="审核通过";
+            auditLog.setRemark("活动审核通过");
         }
         NotificationDTO notificationDTO = new NotificationDTO();
         notificationDTO.setUserId(activity.getUserId());
@@ -121,6 +131,7 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
         notificationDTO.setType(status);
         notificationDTO.setSenderId(UserContext.getUserId());
         notificationClient.sendNotification(notificationDTO);
+        logClient.saveLog(auditLog);
         //2.更新
         activity.setStatus(status);
         activity.setAuditTime(LocalDateTime.now());
@@ -380,6 +391,7 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
     public Result getActivityCountByUserId(Long userId) {
         //使用mybatis-plus根据用户id查询对应数量
         Long count = lambdaQuery().eq(Activity::getUserId, userId).count();
+        System.out.println("count = " + count);
         VolunteerDTO dto=new VolunteerDTO();
         dto.setCount(count);
         return Result.ok(dto);

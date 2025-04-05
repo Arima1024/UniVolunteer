@@ -31,6 +31,7 @@
         <module>uv-api</module>
         <module>service-registration</module>
         <module>service-notification</module>
+        <module>service-log</module>
     </modules>
     <scm>
         <connection/>

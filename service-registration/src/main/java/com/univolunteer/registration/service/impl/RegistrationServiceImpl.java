@@ -6,11 +6,13 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.univolunteer.api.client.ActivityClient;
+import com.univolunteer.api.client.LogClient;
 import com.univolunteer.api.client.NotificationClient;
 import com.univolunteer.api.client.RecordClient;
 import com.univolunteer.api.dto.NotificationDTO;
 import com.univolunteer.common.context.UserContext;
 import com.univolunteer.common.domain.entity.Activity;
+import com.univolunteer.common.domain.entity.AuditLog;
 import com.univolunteer.common.domain.vo.ActivityVO;
 import com.univolunteer.common.result.Result;
 import com.univolunteer.common.utils.ResultParserUtils;
@@ -37,9 +39,14 @@ public class RegistrationServiceImpl extends ServiceImpl<RegistrationMapper, Reg
     private final NotificationClient notificationClient;
     private final ResultParserUtils resultParserUtils;
     private  final RecordClient recordClient;
+    private final LogClient logClient;
     @Override
     @Transactional
     public Result register(Long activityId) {
+        AuditLog auditLog = new AuditLog();
+        auditLog.setUserId(UserContext.getUserId());
+        auditLog.setAction("报名");
+        auditLog.setTimestamp(LocalDateTime.now());
         Result checkResult = activityClient.check(activityId);
         if (checkResult.getSuccess()) {
             //判断是否是否报名
@@ -48,12 +55,20 @@ public class RegistrationServiceImpl extends ServiceImpl<RegistrationMapper, Reg
                     .eq(Registration::getUserId, UserContext.getUserId())
                     .list();
             if (list!=null&&!list.isEmpty()) {
+                auditLog.setRemark("报名失败");
+                auditLog.setStatus(0);
+                logClient.saveLog(auditLog);
                 return Result.fail("该志愿已报名");
             }
         } else {
+            auditLog.setRemark("报名失败");
+            auditLog.setStatus(0);
+            logClient.saveLog(auditLog);
             // 如果请求失败，返回错误消息
             return Result.fail(checkResult.getErrorMsg());
         }
+        auditLog.setRemark("报名成功");
+        logClient.saveLog(auditLog);
         Registration registration = new Registration();
         Long userId = UserContext.getUserId();
         registration.setActivityId(activityId);
@@ -111,8 +126,17 @@ public class RegistrationServiceImpl extends ServiceImpl<RegistrationMapper, Reg
         LambdaUpdateWrapper<RegistrationHistory> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(RegistrationHistory::getId, registrationHistory.getId());  // 添加 id 条件
         registrationHistoryMapper.update(registrationHistory,updateWrapper);
+        AuditLog auditLog = new AuditLog();
+        auditLog.setUserId(UserContext.getUserId());
+        auditLog.setAction("报名审核");
+        auditLog.setTimestamp(LocalDateTime.now());
         //去活动微服务里面改变对应报名人数
-        activityClient.signUp(registration.getActivityId());
+        if (status==1){
+            activityClient.signUp(registration.getActivityId());
+            auditLog.setRemark("报名审核通过");
+        }else {
+            auditLog.setRemark("报名审核不通过");
+        }
         NotificationDTO notificationDTO = new NotificationDTO();
         notificationDTO.setActivityId(registration.getActivityId());
         notificationDTO.setSenderId(UserContext.getUserId());
@@ -120,6 +144,7 @@ public class RegistrationServiceImpl extends ServiceImpl<RegistrationMapper, Reg
         notificationDTO.setMessage(reason);
         notificationDTO.setType(status);
         notificationClient.sendNotification(notificationDTO);
+        logClient.saveLog(auditLog);
         return Result.ok("审核成功");
     }
 
@@ -128,10 +153,19 @@ public class RegistrationServiceImpl extends ServiceImpl<RegistrationMapper, Reg
     public Result cancel(Long registrationId,String reason) {
         //获取registrationId对应的registration
         Registration registration = getById(registrationId);
+        AuditLog auditLog = new AuditLog();
+        auditLog.setUserId(UserContext.getUserId());
+        auditLog.setAction("报名取消");
+        auditLog.setTimestamp(LocalDateTime.now());
         if (registration==null){
+            auditLog.setRemark("报名取消失败");
+            auditLog.setStatus(0);
+            logClient.saveLog(auditLog);
             return Result.fail("报名记录不存在");
         }
         if (registration.getStatus()==1){
+            auditLog.setRemark("报名取消失败");
+            auditLog.setStatus(0);
             return Result.fail("报名已通过，无法取消");
         }
         //根据registrationId从历史表拿出对应记录
@@ -158,6 +192,8 @@ public class RegistrationServiceImpl extends ServiceImpl<RegistrationMapper, Reg
         //更新registration
         registration.setStatus(3);
         updateById(registration);
+        auditLog.setRemark("报名取消失败");
+        logClient.saveLog(auditLog);
         return Result.ok("取消报名成功");
     }
 }
