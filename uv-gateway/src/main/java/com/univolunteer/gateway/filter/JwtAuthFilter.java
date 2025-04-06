@@ -37,7 +37,8 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
     private static final List<String> WHITE_LIST = List.of(
             "/user/login",
             "/user/register",
-            "/organization/school"
+            "/organization/school",
+            "/organization"
     );
 
     @Override

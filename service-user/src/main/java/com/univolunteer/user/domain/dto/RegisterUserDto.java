@@ -21,7 +21,7 @@ public class RegisterUserDto {
     private String phone;
 
 
-    private UserRoleEnum role;
+    private Integer role;
 
 
     private String OrganizationName;

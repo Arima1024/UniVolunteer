@@ -38,6 +38,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -122,12 +123,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, Users> implements U
             return Result.fail("密码过于简单，至少包含一个小写字母、一个大写字母、一个数字，长度不少于7");
         }
         // 2. 转换角色枚举
-        UserRoleEnum roleEnum;
-        try {
-            roleEnum = registerDto.getRole();
-        } catch (Exception e) {
-            return Result.fail("无效的角色类型，只能为 VOLUNTEER 或 RECRUITER");
-        }
+          if (registerDto.getRole() !=0&&registerDto.getRole()!=1) {
+              return Result.fail("无效的角色类型，只能为 VOLUNTEER 或 RECRUITER");
+          }
 
         //2.查出组织的id
         Long organizationId = organizationMapper.selectOne(new QueryWrapper<Organization>().lambda().eq(Organization::getOrganizationName,registerDto.getOrganizationName())).getOrganizationId();
@@ -138,7 +136,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, Users> implements U
         Users user = new Users();
         user.setUsername(registerDto.getUsername());
         user.setPassword(encodedPassword);
-        user.setRole(roleEnum);
+        if (registerDto.getRole() == 0) {
+            user.setRole(UserRoleEnum.VOLUNTEER);
+        } else {
+            user.setRole(UserRoleEnum.RECRUITER);
+        }
         user.setEmail(registerDto.getEmail());
         user.setPhone(registerDto.getPhone());
         user.setCreateTime(LocalDateTime.now());
@@ -312,6 +314,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, Users> implements U
             return Result.fail("用户不存在");
         }
         UserNotificationVO vo = new UserNotificationVO();
+        VolunteerDTO dto = resultParserUtils.parseData(recordClient.getVolunteerTime(userId).getData(), VolunteerDTO.class);
         BeanUtils.copyProperties(user, vo);
         if (user.getOrganizationId() != null) {
             Organization org = organizationMapper.selectById(user.getOrganizationId());
@@ -319,8 +322,71 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, Users> implements U
                 vo.setOrganizationName(org.getOrganizationName());
             }
         }
+        vo.setHours(dto.getTime());
+        vo.setCount(dto.getCount());
         return Result.ok(vo);
     }
+
+    @Override
+    public Result getSingleUser() {
+        Long userId=UserContext.getUserId();
+        Users user = getById(userId);
+        UserNotificationVO vo = new UserNotificationVO();
+        BeanUtils.copyProperties(user, vo);
+        if (user.getOrganizationId() != null) {
+            Organization org = organizationMapper.selectById(user.getOrganizationId());
+            if (org != null) {
+                vo.setOrganizationName(org.getOrganizationName());
+            }
+        }
+        if (UserContext.get().getRole()==UserRoleEnum.VOLUNTEER) {
+            VolunteerDTO dto = resultParserUtils.parseData(recordClient.getVolunteerTime(userId).getData(), VolunteerDTO.class);
+            vo.setHours(dto.getTime());
+            vo.setCount(dto.getCount());
+        }else if (UserContext.get().getRole()==UserRoleEnum.RECRUITER){
+            VolunteerDTO dto = resultParserUtils.parseData(activityClient.getActivityCountByUserId(userId).getData(), VolunteerDTO.class);
+            vo.setCount(dto.getCount());
+        }
+        else {
+            return Result.fail("用户角色错误");
+        }
+        return Result.ok(vo);
+    }
+
+    @Override
+    public Result getHoursByOrganization() {
+        //拿到所有组织为学校的id
+        List<Organization> organizations = organizationMapper.selectList(new LambdaQueryWrapper<Organization>().eq(Organization::getIsSchool, 1));
+        List<Long> schoolIds = organizations.stream().map(Organization::getOrganizationId).toList();
+        List<Double> sumList = new ArrayList<>();
+        sumList.add(0.0);
+        Map<String, Double> map = new HashMap<>();
+        schoolIds.forEach(schoolId -> {
+            lambdaQuery()
+                    .eq(Users::getOrganizationId, schoolId)
+                    .eq(Users::getRole, UserRoleEnum.VOLUNTEER)
+                    .list()
+                    .forEach(user -> {
+                        VolunteerDTO dto = resultParserUtils.parseData(recordClient.getVolunteerTime(user.getId()).getData(), VolunteerDTO.class);
+                        sumList.set(0, sumList.get(0) + dto.getTime());
+                    });
+            String organizationName = organizationMapper.selectById(schoolId).getOrganizationName();
+            map.put(organizationName, sumList.get(0));
+            sumList.set(0, 0.0);
+        });
+        // 按照值进行降序排序
+        Map<String, Double> sortedMap = map.entrySet()
+                .stream()
+                .sorted((entry1, entry2) -> entry2.getValue().compareTo(entry1.getValue()))  // 排序依据值（降序）
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (e1, e2) -> e1, // 如果有相同的键，选择第一个值
+                        LinkedHashMap::new  // 保证插入顺序
+                ));
+      return Result.ok(sortedMap);
+    }
+
     private IPage<UserNotificationVO> getAllUserVO(int page, int size, Page<Users> users, int role) {
         List<UserNotificationVO> userNotificationVOList = new ArrayList<>();
         users.getRecords().forEach(user -> {
