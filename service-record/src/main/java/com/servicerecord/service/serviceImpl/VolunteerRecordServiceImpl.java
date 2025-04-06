@@ -3,6 +3,7 @@ package com.servicerecord.service.serviceImpl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.servicerecord.domain.dto.RecordDTO;
 import com.servicerecord.domain.entity.VolunteerRecord;
 import com.servicerecord.enums.CompletionStatus;
 import com.servicerecord.mapper.VolunteerRecordMapper;
@@ -22,6 +23,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
+
 
 @Service
 @RequiredArgsConstructor
@@ -38,34 +41,66 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
      * 根据时间范围查询志愿记录
      */
     @Override
-    public Page<VolunteerRecord> getRecordsByTimeRange(int page,int size,LocalDateTime startTime, LocalDateTime finishTime) {
+    public Page<RecordDTO> getRecordsByTimeRange(int page,int size,LocalDateTime startTime, LocalDateTime finishTime) {
+        LambdaQueryWrapper<VolunteerRecord> queryWrapper = new LambdaQueryWrapper<>();
         Page<VolunteerRecord> records = new Page<>(page,size);
-        return this.lambdaQuery()
-                .ge(VolunteerRecord::getSignInTime, startTime)
-                .le(VolunteerRecord::getSignOutTime, finishTime)
-                .page(records);
+        queryWrapper.eq(VolunteerRecord::getCompletionStatus, CompletionStatus.COMPLETED);
+        //可以自定义时间来进行查询
+        if(startTime!=null){
+            queryWrapper.ge(VolunteerRecord::getSignInTime, startTime);
+        }
+        if(startTime!=null){
+            queryWrapper.le(VolunteerRecord::getSignOutTime, finishTime);
+        }
+        Page<VolunteerRecord> recordPage = baseMapper.selectPage(records, queryWrapper);
+        // 将 VolunteerRecord 映射为 RecordDTO
+        List<RecordDTO> dtoList = recordPage.getRecords().stream().map(record -> {
+            // 从活动服务中获取活动信息，并转换为 Activity 对象
+            Activity activity = resultParserUtils.parseData(
+                    activityClient.getActivity(record.getActivityId()).getData(), Activity.class
+            );
+            return new RecordDTO(
+                    record.getId(),                // recordId
+                    activity.getTitle(),           // activityName
+                    activity.getLocation(),        // activityLocation
+                    record.getHours(),
+                    record.getCompletionStatus(),
+                    record.getSignInTime(),
+                    record.getSignOutTime()
+            );
+        }).collect(Collectors.toList());
+
+        // 构造新的 RecordDTO 分页对象
+        Page<RecordDTO> dtoPage = new Page<>(recordPage.getCurrent(), recordPage.getSize(), recordPage.getTotal());
+        dtoPage.setRecords(dtoList);
+
+        return dtoPage;
     }
 
     /**
      * 按分类和排序方式获取志愿记录
      */
     @Override
-    public Page<VolunteerRecord> getRecordsByClassification(int page, int size, String classification, String sortType) {
+    public Page<RecordDTO> getRecordsByClassification(int page, int size, String classification, String sortType) {
         LambdaQueryWrapper<VolunteerRecord> queryWrapper = new LambdaQueryWrapper<>();
-        Page<VolunteerRecord> records = new Page<>(page,size);
+        Page<VolunteerRecord> recordsPage = new Page<>(page, size);
         Long userId = UserContext.getUserId();
+
         // 按分类过滤
-        if("全部".equals(classification)) {
+        if ("全部".equals(classification)) {
             queryWrapper.eq(VolunteerRecord::getUserId, userId);
-        }
-        else if ("待开展".equals(classification)) {
-            queryWrapper.eq(VolunteerRecord::getUserId,userId).eq(VolunteerRecord::getCompletionStatus, CompletionStatus.NOT_STARTED.getValue());
+        } else if ("待开展".equals(classification)) {
+            queryWrapper.eq(VolunteerRecord::getUserId, userId)
+                    .eq(VolunteerRecord::getCompletionStatus, CompletionStatus.NOT_STARTED.getValue());
         } else if ("开展中".equals(classification)) {
-            queryWrapper.eq(VolunteerRecord::getUserId,userId).eq(VolunteerRecord::getCompletionStatus, CompletionStatus.IN_PROGRESS.getValue());
+            queryWrapper.eq(VolunteerRecord::getUserId, userId)
+                    .eq(VolunteerRecord::getCompletionStatus, CompletionStatus.IN_PROGRESS.getValue());
         } else if ("已结束".equals(classification)) {
-            queryWrapper.eq(VolunteerRecord::getUserId,userId).eq(VolunteerRecord::getCompletionStatus, CompletionStatus.COMPLETED.getValue());
+            queryWrapper.eq(VolunteerRecord::getUserId, userId)
+                    .eq(VolunteerRecord::getCompletionStatus, CompletionStatus.COMPLETED.getValue());
         } else if ("已放弃".equals(classification)) {
-            queryWrapper.eq(VolunteerRecord::getUserId,userId).eq(VolunteerRecord::getCompletionStatus, CompletionStatus.ABANDONED.getValue());
+            queryWrapper.eq(VolunteerRecord::getUserId, userId)
+                    .eq(VolunteerRecord::getCompletionStatus, CompletionStatus.ABANDONED.getValue());
         }
 
         // 按排序方式排序
@@ -75,8 +110,33 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
             queryWrapper.orderByAsc(VolunteerRecord::getSignInTime);
         }
 
-        return this.baseMapper.selectPage(records,queryWrapper);
+        // 分页查询 VolunteerRecord 数据
+        Page<VolunteerRecord> volunteerRecordPage = this.baseMapper.selectPage(recordsPage, queryWrapper);
+
+        // 将 VolunteerRecord 映射为 RecordDTO
+        List<RecordDTO> dtoList = volunteerRecordPage.getRecords().stream().map(record -> {
+            // 从活动服务中获取活动信息，并转换为 Activity 对象
+            Activity activity = resultParserUtils.parseData(
+                    activityClient.getActivity(record.getActivityId()).getData(), Activity.class
+            );
+            return new RecordDTO(
+                    record.getId(),                // recordId
+                    activity.getTitle(),           // activityName
+                    activity.getLocation(),        // activityLocation
+                    record.getHours(),
+                    record.getCompletionStatus(),
+                    record.getSignInTime(),
+                    record.getSignOutTime()
+            );
+        }).collect(Collectors.toList());
+
+        // 构造新的 RecordDTO 分页对象
+        Page<RecordDTO> dtoPage = new Page<>(volunteerRecordPage.getCurrent(), volunteerRecordPage.getSize(), volunteerRecordPage.getTotal());
+        dtoPage.setRecords(dtoList);
+
+        return dtoPage;
     }
+
 
     /**
      * 定期更新志愿记录的状态
