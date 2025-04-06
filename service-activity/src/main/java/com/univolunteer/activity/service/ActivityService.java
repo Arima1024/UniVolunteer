@@ -44,4 +44,6 @@ public interface ActivityService {
     Result getActivityListByAllStatus(String keyword,Integer status, Integer timeStatus, String category, int page, int size);
 
     Result getActivityCountByUserId(Long userId);
+
+    Result getActivityListByVolunteerStatus(String category, String time, String location, int page, int size);
 }

@@ -356,9 +356,6 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
     public Result getActivityListByAllStatus(String keyword,Integer status, Integer timeStatus, String category, int page, int size) {
         Page<Activity> activityPage = new Page<>(page, size);
         QueryWrapper<Activity> queryWrapper = new QueryWrapper<>();
-        System.out.println("status = " + status);
-        System.out.println("timeStatus = " + timeStatus);
-        System.out.println("category = " + category);
         if (StringUtils.isNotBlank(keyword)){
             queryWrapper.like("title", keyword);
         }
@@ -395,6 +392,29 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
         VolunteerDTO dto=new VolunteerDTO();
         dto.setCount(count);
         return Result.ok(dto);
+    }
+
+    @Override
+    public Result getActivityListByVolunteerStatus(String category, String time, String location, int page, int size) {
+        Page<Activity> activityPage = new Page<>(page, size);
+        QueryWrapper<Activity> queryWrapper = new QueryWrapper<>();
+        if (StringUtils.isNotBlank(category)){
+            queryWrapper.eq("category", category);
+        }
+        // 首先解析为 LocalDateTime（完整的日期时间格式）
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime parsedTime = LocalDateTime.parse(time, dateTimeFormatter);
+        LocalDateTime dayStart = parsedTime.toLocalDate().atStartOfDay(); // 2025-04-10 00:00:00
+        LocalDateTime dayEnd = parsedTime.toLocalDate().atTime(23, 59, 59, 999999999);
+        queryWrapper.between("start_time", dayStart, dayEnd);
+        if (UserContext.get().getRole()== UserRoleEnum.VOLUNTEER){
+            queryWrapper.eq("status", 1);
+        }
+        if (StringUtils.isNotBlank(location)){
+            queryWrapper.like("location", location);
+        }
+        IPage<ActivityVO> allActivityVO = getAllActivityVO(page, size, activityPage);
+        return Result.ok(allActivityVO.getRecords(), allActivityVO.getTotal());
     }
 
 

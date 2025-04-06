@@ -63,13 +63,7 @@ public class ActivityController {
         return activityService.updateActivityStatus(id,statusDTO.getStatus(),statusDTO.getReason());
     }
 
-    //根据分类查询
-    @GetMapping("/category")
-    public Result getActivityListByCategory(@RequestParam String category,
-                                            @RequestParam(defaultValue = "1") int page,
-                                            @RequestParam(defaultValue = "10") int size){
-        return activityService.getActivityListByCategory(category,page,size);
-    }
+
 
     //获取所有活动数
     @GetMapping("/count")
@@ -110,6 +104,23 @@ public class ActivityController {
     }
     //根据状态 待审核 审核通过 已结束  审核不通过 返回活动列表
 
+    //根据分类查询
+    @GetMapping("/category")
+    public Result getActivityListByCategory(@RequestParam String category,
+                                            @RequestParam(defaultValue = "1") int page,
+                                            @RequestParam(defaultValue = "10") int size){
+        return activityService.getActivityListByCategory(category,page,size);
+    }
+
+    @GetMapping("/volunteer/allStatus")
+    public Result getActivityListByVolunteerStatus(@RequestParam(required = false) String category,
+                                                   @RequestParam(required = false) String time,
+                                                   @RequestParam(required = false) String location,
+                                                  @RequestParam(defaultValue = "1") int page,
+                                                  @RequestParam(defaultValue = "10") int size){
+        return activityService.getActivityListByVolunteerStatus(category,time,location,page,size);
+    }
+
     @GetMapping("/byTimeStatus")
 
     public Result getActivityListByStatus(@RequestParam Integer status,
@@ -149,6 +160,7 @@ public class ActivityController {
                                              @RequestParam(defaultValue = "10") int size){
         return activityService.getActivityListByAllStatus(keyword,status,timeStatus,category,page,size);
     }
+
 
 
     @GetMapping("/allCategory")
