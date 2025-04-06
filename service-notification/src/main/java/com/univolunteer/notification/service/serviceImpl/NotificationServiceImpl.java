@@ -108,11 +108,14 @@ public class NotificationServiceImpl extends ServiceImpl<NotificationMapper,Noti
     public Result getAnnouncement() {
         //时间要在publishTime和endTime之间的，并且role是对应的，status是1的
         QueryWrapper<Announcement> queryWrapper = new QueryWrapper<>();
-        queryWrapper.le("publish_time", LocalDateTime.now())
-                .ge("end_time", LocalDateTime.now())
-                .eq("target_role", UserContext.get().getRole().getCode())
-                .eq("status", 1);
+        if (UserContext.get().getRole().getCode() != 2){
+            queryWrapper.le("publish_time", LocalDateTime.now())
+                    .ge("end_time", LocalDateTime.now())
+                    .eq("target_role", UserContext.get().getRole().getCode())
+                    .eq("status", 1);
+        }
         List<Announcement> announcements = announcementsMapper.selectList(queryWrapper);
+        System.out.println("announcements = " + announcements);
         return Result.ok(announcements);
     }
 

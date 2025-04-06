@@ -30,6 +30,12 @@ public class UserController {
         return userService.login(loginDto);
     }
 
+    @GetMapping("/singleUser")
+    public Result getUser() {
+        return userService.getSingleUser();
+    }
+
+
     // 注册功能
     @PostMapping("/register")
     public Result register(@RequestBody RegisterUserDto registerDto) {
@@ -97,5 +103,10 @@ public class UserController {
     @GetMapping("/dailyCount")
     public Result getDailyCount() {
         return userService.getDailyCount();
+    }
+
+    @GetMapping("/hours/organization")
+    public Result getHoursByOrganization() {
+        return userService.getHoursByOrganization();
     }
 }

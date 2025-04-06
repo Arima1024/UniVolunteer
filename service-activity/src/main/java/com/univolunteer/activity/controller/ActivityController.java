@@ -1,6 +1,7 @@
 package com.univolunteer.activity.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.univolunteer.activity.domain.dto.StatusDTO;
 import com.univolunteer.common.annotation.AdminOnly;
 import com.univolunteer.common.annotation.RecruiterOnly;
 import com.univolunteer.common.result.Result;
@@ -58,9 +59,8 @@ public class ActivityController {
 
     @AdminOnly
     @PutMapping("/status/{id}")
-    public Result updateActivityStatus(@PathVariable Long id, @RequestParam Integer status,
-                                       @RequestParam(required = false) String reason){
-        return activityService.updateActivityStatus(id,status,reason);
+    public Result updateActivityStatus(@PathVariable Long id, @RequestBody StatusDTO statusDTO){
+        return activityService.updateActivityStatus(id,statusDTO.getStatus(),statusDTO.getReason());
     }
 
     //根据分类查询
