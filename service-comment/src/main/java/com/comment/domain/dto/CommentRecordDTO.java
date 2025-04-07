@@ -10,7 +10,6 @@ import java.time.LocalDateTime;
 public class CommentRecordDTO {
     private Long recordId;
     private Double hours;
-    private Integer completionStatus;
     private LocalDateTime signInTime;
     private LocalDateTime signOutTime;
 }

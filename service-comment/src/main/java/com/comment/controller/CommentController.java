@@ -3,7 +3,6 @@ package com.comment.controller;
 import com.comment.domain.dto.ActivityDTO;
 import com.comment.domain.dto.CommentRecordDTO;
 import com.comment.domain.dto.CommentResponseDTO;
-import com.comment.domain.dto.RecordDTO;
 import com.comment.domain.entity.Comment;
 import com.comment.enums.SortTypeEnum;
 import com.comment.service.CommentService;

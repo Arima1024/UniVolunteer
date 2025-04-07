@@ -3,22 +3,16 @@ package com.comment.service.serviceImpl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.comment.domain.dto.RecordDTO;
 import com.comment.domain.entity.Comment;
 import com.comment.mapper.CommentMapper;
 import com.comment.service.CommentService;
-import com.univolunteer.api.client.RecordClient;
 import com.univolunteer.common.context.UserContext;
 import com.univolunteer.common.result.Result;
-import com.univolunteer.common.utils.ResultParserUtils;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @CacheConfig(cacheNames = "comments")
