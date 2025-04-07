@@ -17,7 +17,7 @@ public interface VolunteerRecordService extends IService<VolunteerRecord> {
 
     Page<RecordDTO> getRecordsByClassification(int page, int size, String classification, String sortType);
 
-    Result addVolunteerRecord(Long activity);
+    Result addVolunteerRecord(Long activity,Long userId);
 
     Result signIn(Long recordId);
 

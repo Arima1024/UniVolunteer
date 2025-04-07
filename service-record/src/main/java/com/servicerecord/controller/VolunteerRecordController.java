@@ -40,8 +40,8 @@ public class VolunteerRecordController {
 
 
     @PostMapping("/add")
-    public Result addVolunteerRecord(@RequestParam Long activityId) {
-        return volunteerRecordService.addVolunteerRecord(activityId);
+    public Result addVolunteerRecord(@RequestParam Long activityId,@RequestParam Long userId) {
+        return volunteerRecordService.addVolunteerRecord(activityId,userId);
     }
 
     /**
@@ -98,7 +98,7 @@ public class VolunteerRecordController {
                                   @RequestParam(required = false) String school,
                                   @RequestParam(required = false) String activityName,
                                   @RequestParam(required = false) String activityLocation,
-                                  @RequestParam(required = false)@DateTimeFormat(pattern = "yyyy-MM-ddTHH:mm:ss") LocalDateTime startTime) {
+                                  @RequestParam(required = false) LocalDateTime startTime) {
         return Result.ok(volunteerRecordService.getAllOnlyAdmin(page,size,name,school,activityName,activityLocation,startTime));
 
     }

@@ -203,8 +203,7 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
 
     @Override
     @Transactional
-    public Result addVolunteerRecord(Long activity) {
-        Long userId = UserContext.getUserId();
+    public Result addVolunteerRecord(Long activity,Long userId) {
         VolunteerRecord record = new VolunteerRecord();
         record.setUserId(userId);
         record.setActivityId(activity);
@@ -246,9 +245,9 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
         if (signInTime.isBefore(activity.getStartTime())) {
             return Result.fail("活动尚未开始，不可签到");
         }
-
         // 5. 更新签到时间
         record.setSignInTime(signInTime);
+        record.setCompletionStatus(CompletionStatus.IN_PROGRESS.getValue());
         this.updateById(record);
 
         return Result.ok(signInTime);

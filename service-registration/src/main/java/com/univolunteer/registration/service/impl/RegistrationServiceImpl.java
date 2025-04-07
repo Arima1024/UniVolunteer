@@ -134,7 +134,7 @@ public class RegistrationServiceImpl extends ServiceImpl<RegistrationMapper, Reg
         //去活动微服务里面改变对应报名人数
         if (status==1){
             activityClient.signUp(registration.getActivityId());
-            recordClient.addRecord(registration.getActivityId());
+            recordClient.addRecord(registration.getActivityId(),registration.getUserId());
             auditLog.setRemark("报名审核通过");
         }else {
             auditLog.setRemark("报名审核不通过");

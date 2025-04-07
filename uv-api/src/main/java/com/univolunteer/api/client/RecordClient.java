@@ -11,7 +11,7 @@ public interface RecordClient {
     Result getVolunteerTime(@RequestParam Long userId);
 
     @PostMapping("/volunteerRecord/add")
-    Result addRecord(@RequestParam Long activityId);
+    Result addRecord(@RequestParam Long activityId,@RequestParam Long userId);
 
     @GetMapping("/volunteerRecord/{activityId}&{userId}")
     Result getRecord(@PathVariable("activityId") Long activityId, @PathVariable("userId") Long userId);
