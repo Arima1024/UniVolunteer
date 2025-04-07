@@ -34,4 +34,6 @@ public interface UserService extends IService<Users> {
     Result getSingleUser();
 
     Result getHoursByOrganization();
+
+    Result getUserByRecord(Long userId);
 }

@@ -328,6 +328,22 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, Users> implements U
     }
 
     @Override
+    public Result getUserByRecord(Long userId) {
+        Users user = getById(userId);
+        if (user == null) {
+            return Result.fail("用户不存在");
+        }
+        UserNotificationVO vo = new UserNotificationVO();
+       if (user.getOrganizationId() != null) {
+            Organization org = organizationMapper.selectById(user.getOrganizationId());
+            if (org != null) {
+                vo.setOrganizationName(org.getOrganizationName());
+            }
+        }
+        return Result.ok(vo);
+    }
+
+    @Override
     public Result getSingleUser() {
         Long userId=UserContext.getUserId();
         Users user = getById(userId);
@@ -386,6 +402,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, Users> implements U
                 ));
       return Result.ok(sortedMap);
     }
+
+
 
     private IPage<UserNotificationVO> getAllUserVO(int page, int size, Page<Users> users, int role) {
         List<UserNotificationVO> userNotificationVOList = new ArrayList<>();

@@ -73,6 +73,11 @@ public class UserController {
     public Result getUser(@PathVariable Long userId) {
         return userService.getUser(userId);
     }
+
+    @GetMapping("/record/{userId}")
+    public Result getUserByRecord(@PathVariable Long userId) {
+        return userService.getUserByRecord(userId);
+    }
     //模糊查询用户
     @GetMapping("/search")
     @AdminOnly
