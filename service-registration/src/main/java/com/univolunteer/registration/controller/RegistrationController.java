@@ -37,4 +37,10 @@ public class RegistrationController {
         return registrationService.cancel(registrationId,reason);
     }
 
+    @GetMapping("/byStatus")
+    public Result getRegistrationListByStatus(@RequestParam(defaultValue = "1") int page,
+                                             @RequestParam(defaultValue = "10") int size) {
+        return registrationService.getRegistrationListByStatus(page, size);
+    }
+
 }

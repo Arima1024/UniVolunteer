@@ -2,6 +2,8 @@ package com.univolunteer.registration.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,14 +20,17 @@ import com.univolunteer.common.result.Result;
 import com.univolunteer.common.utils.ResultParserUtils;
 import com.univolunteer.registration.domain.entity.Registration;
 import com.univolunteer.registration.domain.entity.RegistrationHistory;
+import com.univolunteer.registration.domain.vo.RegistrationVO;
 import com.univolunteer.registration.mapper.RegistrationHistoryMapper;
 import com.univolunteer.registration.mapper.RegistrationMapper;
 import com.univolunteer.registration.service.RegistrationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -195,5 +200,33 @@ public class RegistrationServiceImpl extends ServiceImpl<RegistrationMapper, Reg
         auditLog.setRemark("报名取消失败");
         logClient.saveLog(auditLog);
         return Result.ok("取消报名成功");
+    }
+
+    @Override
+    public Result getRegistrationListByStatus( int page, int size) {
+        Page<Registration> registrationPage = new Page<>(page, size);
+        QueryWrapper<Registration> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("status", 0);
+        Page<Registration> registrations = this.page(registrationPage, queryWrapper);
+        IPage<RegistrationVO> registrationVOIPage = getRegistrationVO(page, size, registrations);
+        return Result.ok(registrationVOIPage.getRecords(), registrationVOIPage.getTotal());
+    }
+
+    private IPage<RegistrationVO> getRegistrationVO(int page, int size, Page<Registration> registrations) {
+       List<Registration> records = registrations.getRecords();
+       List<RegistrationVO> registrationVOList = new ArrayList<>();
+       records.forEach(registration -> {
+           RegistrationVO registrationVO = new RegistrationVO();
+           ActivityVO activityVO = resultParserUtils.parseData(activityClient.getActivity(registration.getActivityId()).getData(), ActivityVO.class);
+           BeanUtils.copyProperties(registration, registrationVO);
+           BeanUtils.copyProperties(activityVO, registrationVO);
+           registrationVOList.add(registrationVO);
+       });
+       Page<RegistrationVO> registrationVOPage = new Page<>();
+       registrationVOPage.setRecords(registrationVOList);
+       registrationVOPage.setTotal(registrations.getTotal());
+       registrationVOPage.setPages(registrations.getPages());
+       registrationVOPage.setCurrent(registrations.getCurrent());
+       return registrationVOPage;
     }
 }
