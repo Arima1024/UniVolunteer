@@ -18,9 +18,9 @@ public interface VolunteerRecordService extends IService<VolunteerRecord> {
 
     Result addVolunteerRecord(Long activity);
 
-    Result signIn(Long activityId, LocalDateTime signInTime);
+    Result signIn(Long recordId, LocalDateTime signInTime);
 
-    Result signOut(Long activityId, LocalDateTime signOutTime);
+    Result signOut(Long recordId, LocalDateTime signOutTime);
 
     Double calculateTotalTime(LocalDateTime startTime, LocalDateTime finishTime);
 

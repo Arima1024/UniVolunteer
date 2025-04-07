@@ -211,14 +211,20 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
 
     @Override
     @Transactional
-    public Result signIn(Long activityId, LocalDateTime signInTime) {
+    public Result signIn(Long recordId, LocalDateTime signInTime) {
+
         // 1. 检查 signInTime 是否为空
         if (signInTime == null) {
             return Result.fail("签到时间不能为空");
         }
 
+        VolunteerRecord record = this.getById(recordId);
+        if (record == null) {
+            return Result.fail("数据库中暂无此记录");
+        }
+
         // 2. 获取活动信息
-        Activity activity = resultParserUtils.parseData(activityClient.getActivity(activityId).getData(), Activity.class);
+        Activity activity = resultParserUtils.parseData(activityClient.getActivity(record.getActivityId()).getData(), Activity.class);
 
         System.out.println(activity);
 
@@ -229,17 +235,6 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
             return Result.fail("活动开始时间未定义");
         }
 
-        Long userId = UserContext.getUserId();
-
-        // 3. 查询数据库记录
-        LambdaQueryWrapper<VolunteerRecord> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(VolunteerRecord::getActivityId, activityId)
-                .eq(VolunteerRecord::getUserId, userId);
-        VolunteerRecord record = this.getOne(queryWrapper);
-
-        if (record == null) {
-            return Result.fail("数据库中暂无此记录");
-        }
         if (!record.getCompletionStatus().equals(CompletionStatus.NOT_STARTED.getValue())) {
             return Result.fail("状态错误");
         }
@@ -258,18 +253,19 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
 
     @Override
     @Transactional
-    public Result signOut(Long activityId, LocalDateTime signOutTime) {
-        Activity activity = resultParserUtils.parseData(activityClient.getActivity(activityId).getData(),Activity.class);
-        Long userId = UserContext.getUserId();
-        //查询符合条件的记录
-        LambdaQueryWrapper<VolunteerRecord> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(VolunteerRecord::getActivityId, activityId)
-                .eq(VolunteerRecord::getUserId, userId);
-        VolunteerRecord record = this.getOne(queryWrapper);
+    public Result signOut(Long recordId, LocalDateTime signOutTime) {
+        if (signOutTime == null) {
+            return Result.fail("签退时间不能为空");
+        }
+
+        VolunteerRecord record = this.getById(recordId);
 
         if (record == null) {
             return Result.fail("数据库中暂无此记录");
         }
+
+        Activity activity = resultParserUtils.parseData(activityClient.getActivity(record.getActivityId()).getData(),Activity.class);
+
         if (record.getSignInTime() == null) {
             return Result.fail("签到时间不存在，无法签退");
         }
