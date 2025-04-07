@@ -19,7 +19,8 @@ public class logController {
     }
 
     @GetMapping
-    public Result getLog(){
-        return logService.getLog();
+    public Result getLog(@RequestParam(defaultValue = "1") int page,
+                         @RequestParam(defaultValue = "10") int size){
+        return logService.getLog(page,size);
     }
 }

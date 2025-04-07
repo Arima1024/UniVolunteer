@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 
 @Data
 public class AuditLogDTO {
-    private Long userId;
+    private Long id;
 
     private String action;
 
@@ -21,4 +21,6 @@ public class AuditLogDTO {
     private String userName;
 
     private String phone;
+
+    private  Long auditLogId;
 }

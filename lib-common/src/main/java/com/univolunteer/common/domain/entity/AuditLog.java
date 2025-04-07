@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 public class AuditLog {
 
     @TableId
-    private Integer id;
+    private Long id;
 
     private Long userId;
 

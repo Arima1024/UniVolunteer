@@ -288,6 +288,19 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
         }
         Page<Activity> activities = this.page(activityPage, queryWrapper);
         IPage<ActivityVO> allActivityVO = getAllActivityVO(page, size, activities);
+        if (status!=null) {
+            if (status == 3) {
+                allActivityVO.getRecords().forEach(activityVO -> {
+                    activityVO.setStatus(3);
+                });
+            }
+        }else {
+            allActivityVO.getRecords().forEach(activityVO -> {
+                if (activityVO.getEndTime().isBefore(LocalDateTime.now())) {
+                    activityVO.setStatus(3);
+                }
+            });
+        }
         return Result.ok(allActivityVO.getRecords(), allActivityVO.getTotal());
     }
 

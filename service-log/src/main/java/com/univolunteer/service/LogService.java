@@ -7,5 +7,5 @@ import com.univolunteer.common.domain.entity.AuditLog;
 public interface LogService extends IService<AuditLog> {
     Result addLog(AuditLog auditLog);
 
-    Result getLog();
+    Result getLog(int page, int size);
 }

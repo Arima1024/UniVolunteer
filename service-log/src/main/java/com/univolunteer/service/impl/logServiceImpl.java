@@ -1,7 +1,12 @@
 package com.univolunteer.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.univolunteer.api.client.UserClient;
+import com.univolunteer.common.domain.entity.Activity;
+import com.univolunteer.common.domain.vo.ActivityVO;
 import com.univolunteer.common.domain.vo.UserNotificationVO;
 import com.univolunteer.common.result.Result;
 import com.univolunteer.common.domain.entity.AuditLog;
@@ -33,13 +38,18 @@ public class logServiceImpl extends ServiceImpl<LogMapper, AuditLog> implements 
     }
 
     @Override
-    public Result getLog() {
-        List<AuditLog> list = list();
-        List<AuditLogDTO> auditLogDTOS=new ArrayList<>();
-        if (list.isEmpty()) {
-            return Result.fail("暂无记录");
-        }
-        for (AuditLog auditLog : list) {
+    public Result getLog(int page, int size) {
+        Page<AuditLog> logPage = new Page<>(page, size);
+        QueryWrapper<AuditLog> queryWrapper = new QueryWrapper<>();
+        Page<AuditLog> logs = this.page(logPage, queryWrapper);
+        IPage<AuditLogDTO> auditLogDTOIPage = getAllLog(page, size, logs);
+        return Result.ok(auditLogDTOIPage.getRecords(), auditLogDTOIPage.getTotal());
+    }
+
+    private IPage<AuditLogDTO> getAllLog(int page, int size, Page<AuditLog> logs) {
+        List<AuditLog> auditLogList = logs.getRecords();
+        List<AuditLogDTO> auditLogDTOS = new ArrayList<>();
+        for (AuditLog auditLog : auditLogList) {
             AuditLogDTO auditLogDTO = new AuditLogDTO();
             Long userId = auditLog.getUserId();
             Result result = userClient.getUser(userId);
@@ -52,6 +62,11 @@ public class logServiceImpl extends ServiceImpl<LogMapper, AuditLog> implements 
             auditLogDTO.setPhone(userNotificationVO.getPhone());
             auditLogDTOS.add(auditLogDTO);
         }
-        return Result.ok(auditLogDTOS);
+        Page<AuditLogDTO> auditLogDTOPage = new Page<>();
+        auditLogDTOPage.setRecords(auditLogDTOS);
+        auditLogDTOPage.setTotal(logs.getTotal());
+        auditLogDTOPage.setPages(logs.getPages());
+        auditLogDTOPage.setCurrent(logs.getCurrent());
+        return auditLogDTOPage;
     }
 }

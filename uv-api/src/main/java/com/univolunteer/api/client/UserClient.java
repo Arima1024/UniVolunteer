@@ -10,6 +10,6 @@ public interface UserClient {
     @GetMapping("/user/{userId}")
     Result getUser(@PathVariable Long userId);
 
-    @GetMapping("/record/{userId}")
+    @GetMapping("/user/record/{userId}")
     public Result getUserByRecord(@PathVariable Long userId);
 }
