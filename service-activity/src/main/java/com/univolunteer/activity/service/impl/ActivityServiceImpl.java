@@ -356,7 +356,7 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
     }
 
     @Override
-    public Result getActivityListByAllStatus(String keyword,Integer status, Integer timeStatus, String category, int page, int size) {
+    public Result getActivityListByAllStatus(String keyword,Integer status, Integer timeStatus, String category, Integer sortType,int page, int size) {
         Page<Activity> activityPage = new Page<>(page, size);
         QueryWrapper<Activity> queryWrapper = new QueryWrapper<>();
         if (StringUtils.isNotBlank(keyword)){
@@ -381,6 +381,17 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
         }
         if (StringUtils.isNotBlank(category)){
             queryWrapper.eq("category", category);
+        }
+        if (sortType != null){
+            //按照时间排序
+            if (sortType == 0){
+                //按照开始时间升序
+                queryWrapper.orderByAsc("create_time");
+            }
+            if (sortType == 1){
+                //按照开始时间升序
+                queryWrapper.orderByAsc("start_time");
+            }
         }
         Page<Activity> activities = this.page(activityPage, queryWrapper);
         IPage<ActivityVO> allActivityVO = getAllActivityVO(page, size, activities);
