@@ -332,6 +332,7 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
             UserNotificationVO user = resultParserUtils.parseData(
                     userClient.getUserByRecord(record.getUserId()).getData(), UserNotificationVO.class
             );
+            System.out.println("user = " + user);
             return new RecordVO(
                     record.getId(),                // recordId
                     user.getUsername(),

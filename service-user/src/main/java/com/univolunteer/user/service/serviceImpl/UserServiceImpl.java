@@ -334,6 +334,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, Users> implements U
             return Result.fail("用户不存在");
         }
         UserNotificationVO vo = new UserNotificationVO();
+        BeanUtils.copyProperties(user, vo);
        if (user.getOrganizationId() != null) {
             Organization org = organizationMapper.selectById(user.getOrganizationId());
             if (org != null) {
