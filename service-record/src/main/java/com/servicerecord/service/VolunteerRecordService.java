@@ -19,13 +19,13 @@ public interface VolunteerRecordService extends IService<VolunteerRecord> {
 
     Result addVolunteerRecord(Long activity);
 
-    Result signIn(Long recordId, LocalDateTime signInTime);
+    Result signIn(Long recordId);
 
-    Result signOut(Long recordId, LocalDateTime signOutTime);
+    Result signOut(Long recordId);
 
     Double calculateTotalTime(LocalDateTime startTime, LocalDateTime finishTime);
 
     VolunteerDTO getVolunteerTime(Long userId);
 
-    Page<RecordVO> getAllOnlyAdmin(int page, int size);
+    Page<RecordVO> getAllOnlyAdmin(int page, int size, String name, String school, String activityName, String activityLocation, LocalDateTime startTime);
 }
