@@ -277,11 +277,14 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
     public Result getActivityListByStatus(Integer status, int page, int size) {
         Page<Activity> activityPage = new Page<>(page, size);
         QueryWrapper<Activity> queryWrapper = new QueryWrapper<>();
-        if (status == 3){
-            //说明查询已经结束，需要去数据库找到结束时间，与当前时间进行比较，如果大于当前时间，则说明活动已经结束
-            queryWrapper.lt("end_time", LocalDateTime.now()).eq("user_id",UserContext.getUserId());
-        }else {
-            queryWrapper.eq("status", status).eq("user_id",UserContext.getUserId());
+        queryWrapper.eq("user_id",UserContext.getUserId());
+        if (status!=null){
+            if (status == 3){
+                //说明查询已经结束，需要去数据库找到结束时间，与当前时间进行比较，如果大于当前时间，则说明活动已经结束
+                queryWrapper.lt("end_time", LocalDateTime.now());
+            }else {
+                queryWrapper.eq("status", status);
+            }
         }
         Page<Activity> activities = this.page(activityPage, queryWrapper);
         IPage<ActivityVO> allActivityVO = getAllActivityVO(page, size, activities);

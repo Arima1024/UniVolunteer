@@ -123,7 +123,7 @@ public class ActivityController {
 
     @GetMapping("/byTimeStatus")
 
-    public Result getActivityListByStatus(@RequestParam Integer status,
+    public Result getActivityListByStatus(@RequestParam(required = false) Integer status,
                                          @RequestParam(defaultValue = "1") int page,
                                          @RequestParam(defaultValue = "10") int size){
         return activityService.getActivityListByStatus(status,page,size);
