@@ -7,8 +7,12 @@ import java.util.Map;
 
 @Data
 public class NotificationDetail {
-    private String title;
     private String message;          // 通知内容
     private LocalDateTime sentTime;  // 发送时间
-    private Map<String, Object> data; // 存储任意数量的对象
+    private Long userId; //发件人
+    private String username;
+    private String activityName;
+    private LocalDateTime startTime;
+    private LocalDateTime endTime;
+    private String organizationName;
 }

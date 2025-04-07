@@ -35,11 +35,12 @@ public class NotificationController {
         return notificationService.getUnreadNotification(page,size);
     }
 
-    //标记已读
-    @PutMapping("/{id}")
-    public Result readNotification(@PathVariable Long id){
-        return notificationService.readNotification(id);
+    @GetMapping("/detail/{id}")
+    public Result readNotificationDetail(@PathVariable Long id){
+        return notificationService.readNotificationDetail(id);
     }
+
+
 
 
     @GetMapping("/unread/count")

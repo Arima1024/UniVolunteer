@@ -21,10 +21,10 @@ import java.util.UUID;
 @ConfigurationProperties(prefix = "aliyun.oss")
 public class AliOSSUtils {
     // 示例的OSS配置，建议通过配置文件来管理
-    private String endpoint = "oss-cn-hangzhou.aliyuncs.com";
+    private String endpoint = "";
     private String accessKeyId = "";
     private String accessKeySecret = "";
-    private String bucketName = "uni-volunteer";
+    private String bucketName = "";
 
     /**
      * 实现上传文件到OSS
@@ -37,11 +37,15 @@ public class AliOSSUtils {
         String originalFilename = multipartFile.getOriginalFilename();
         String fileName = UUID.randomUUID().toString() + originalFilename.substring(originalFilename.lastIndexOf("."));
 
-
-        // 上传文件到OSS
+        // 创建OSSClient
         OSS ossClient = new OSSClientBuilder().build(endpoint, accessKeyId, accessKeySecret);
 
-        ossClient.putObject(bucketName, fileName, inputStream);
+        // 创建上传的ObjectMetadata对象，并设置为公共读权限
+        ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setObjectAcl(CannedAccessControlList.PublicRead);
+
+        // 上传文件到OSS
+        ossClient.putObject(bucketName, fileName, inputStream, metadata);
 
         // 构建文件的访问路径
         String url = buildFileUrl(endpoint, bucketName, fileName);

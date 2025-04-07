@@ -13,7 +13,7 @@ public interface NotificationService extends IService<Notification> {
 
     Result getUnreadNotification(Integer page, Integer size);
 
-    Result readNotification(Long id);
+
 
 
     Result getUnreadNotificationCount();
@@ -23,4 +23,6 @@ public interface NotificationService extends IService<Notification> {
     Result getAnnouncement();
 
     Result getDraft();
+
+    Result readNotificationDetail(Long id);
 }

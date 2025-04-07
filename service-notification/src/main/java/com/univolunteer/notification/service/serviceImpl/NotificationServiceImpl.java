@@ -71,16 +71,28 @@ public class NotificationServiceImpl extends ServiceImpl<NotificationMapper,Noti
         lambdaQuery().eq(Notification::getUserId, userId).eq(Notification::getStatus, 0).orderByDesc(Notification::getCreateTime).page(pageInfo);
         return Result.ok(pageInfo.getRecords(), pageInfo.getTotal());
     }
-
     @Override
-    public Result readNotification(Long id) {
+    public Result readNotificationDetail(Long id) {
         Notification byId = getById(id);
         if (byId == null) {
             return Result.fail("消息不存在");
         }
         byId.setStatus(1);
-        return updateById(byId) ? Result.ok("已读") : Result.fail("已读失败");
+        updateById(byId);
+        ActivityVO activityVO = resultParserUtils.parseData(activityClient.getActivity(byId.getActivityId()).getData(), ActivityVO.class);
+        NotificationDetail notificationDetail = new NotificationDetail();
+        notificationDetail.setActivityName(activityVO.getTitle());
+        notificationDetail.setEndTime(activityVO.getEndTime());
+        notificationDetail.setStartTime(activityVO.getStartTime());
+        notificationDetail.setSentTime(byId.getCreateTime());
+        UserNotificationVO userNotificationVO = resultParserUtils.parseData(userClient.getUserByRecord(byId.getSenderId()), UserNotificationVO.class);
+        notificationDetail.setMessage(byId.getMessage());
+        notificationDetail.setUsername(userNotificationVO.getUsername());
+        notificationDetail.setOrganizationName(userNotificationVO.getOrganizationName());
+        return Result.ok(notificationDetail);
     }
+
+
 
 
     @Override
