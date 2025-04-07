@@ -344,9 +344,10 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
         // 手动分页
         int fromIndex = Math.min((page - 1) * size, filteredList.size());
         int toIndex = Math.min(fromIndex + size, filteredList.size());
+        int total=filteredList.size();
         List<RecordVO> pageList = filteredList.subList(fromIndex, toIndex);
 
-        Page<RecordVO> dtoPage = new Page<>(page, size, filteredList.size());
+        Page<RecordVO> dtoPage = new Page<>(page, size, total);
         dtoPage.setRecords(pageList);
 
         return dtoPage;
