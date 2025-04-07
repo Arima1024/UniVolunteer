@@ -21,21 +21,21 @@ public class VolunteerRecordController {
     //提供签到时间
 
     @PutMapping("/signIn")
-    public Result signIn(@RequestParam Long activityId,@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime signInTime) {
-        return volunteerRecordService.signIn(activityId,signInTime);
+    public Result signIn(@RequestParam Long recordId,@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime signInTime) {
+        return volunteerRecordService.signIn(recordId,signInTime);
     }
 
     /**
      * 提供签退时间，并自动计算服务时长
-     * @param activityId
+     * @param recordId
      * @param signOutTime
      * @return
      */
 
 
     @PutMapping("/signOut")
-    public Result signOut(@RequestParam Long activityId,@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime signOutTime) {
-        return volunteerRecordService.signOut(activityId,signOutTime);
+    public Result signOut(@RequestParam Long recordId,@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime signOutTime) {
+        return volunteerRecordService.signOut(recordId,signOutTime);
     }
 
 
