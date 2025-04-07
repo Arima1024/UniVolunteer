@@ -49,7 +49,7 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
         if(startTime!=null){
             queryWrapper.ge(VolunteerRecord::getSignInTime, startTime);
         }
-        if(startTime!=null){
+        if(finishTime!=null){
             queryWrapper.le(VolunteerRecord::getSignOutTime, finishTime);
         }
         Page<VolunteerRecord> recordPage = baseMapper.selectPage(records, queryWrapper);
