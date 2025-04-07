@@ -3,6 +3,7 @@ package com.servicerecord.service.serviceImpl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.servicerecord.domain.dto.CommentRecordDTO;
 import com.servicerecord.domain.dto.RecordDTO;
 import com.servicerecord.domain.dto.RecordVO;
 import com.servicerecord.domain.entity.VolunteerRecord;
@@ -159,8 +160,6 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
     public void updateRecordStatus() {
         List<VolunteerRecord> records = this.list();
         LocalDateTime now = LocalDateTime.now();
-        System.out.println(now);
-
         for (VolunteerRecord record : records) {
             // 这里可以从 Activity 表获取活动开始和结束时间
             Activity activity = resultParserUtils.parseData(activityClient.getActivity(record.getActivityId()).getData(),Activity.class);
@@ -176,23 +175,12 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
 
 
             if (status == CompletionStatus.NOT_STARTED.getValue()) {
-                // **判断是否应该变成 "开展中"**
-                if (signInTime != null) {
-                    record.setCompletionStatus(CompletionStatus.IN_PROGRESS.getValue());
-                }
-                // **活动开始 30 分钟后仍未签到，则变成 "已放弃"**
-                else if (signInTime == null && now.isAfter(activityStartTime.plusMinutes(30))) {
+                if (signInTime == null && now.isAfter(activityStartTime.plusMinutes(30))) {
                     record.setCompletionStatus(CompletionStatus.ABANDONED.getValue());
                 }
             }
             else if (status == CompletionStatus.IN_PROGRESS.getValue()) {
-                // **已签到 & 活动已结束，则变成 "已完成"**
-                if (signOutTime != null) {
-                    commentClient.autoGenerateComments(record.getActivityId(),record.getUserId());
-                    record.setCompletionStatus(CompletionStatus.COMPLETED.getValue());
-                }
-                // **活动结束 30 分钟后仍未签退，则变成 "已放弃"**
-                else if (signOutTime == null && now.isAfter(activityEndTime.plusMinutes(30))) {
+               if (signOutTime == null && now.isAfter(activityEndTime.plusMinutes(30))) {
                     record.setCompletionStatus(CompletionStatus.ABANDONED.getValue());
                 }
             }
@@ -278,6 +266,8 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
         double hours = minutes / 60.0;
 
         record.setSignOutTime(signOutTime);
+        commentClient.autoGenerateComments(record.getActivityId(),record.getUserId());
+        record.setCompletionStatus(CompletionStatus.COMPLETED.getValue());
         record.setHours(hours);
         this.updateById(record);
 
@@ -360,5 +350,20 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
         dtoPage.setRecords(pageList);
 
         return dtoPage;
+    }
+
+    @Override
+    public CommentRecordDTO getRecord(Long activityId, Long userId) {
+        LambdaQueryWrapper<VolunteerRecord> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(VolunteerRecord::getActivityId,activityId);
+        lambdaQueryWrapper.eq(VolunteerRecord::getUserId,userId);
+        VolunteerRecord record = this.baseMapper.selectOne(lambdaQueryWrapper);
+        CommentRecordDTO recordDTO=new CommentRecordDTO(
+                record.getId(),                // recordId
+                record.getHours(),
+                record.getSignInTime(),
+                record.getSignOutTime()
+        );
+        return recordDTO;
     }
 }
