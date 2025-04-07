@@ -11,5 +11,5 @@ public interface RegistrationService extends IService<Registration> {
 
     Result cancel(Long registrationId,String reason);
 
-    Result getRegistrationListByStatus(int page, int size);
+    Result getRegistrationListByStatus(Integer status,int page, int size);
 }

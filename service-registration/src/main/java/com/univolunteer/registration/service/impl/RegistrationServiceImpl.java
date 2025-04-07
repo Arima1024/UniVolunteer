@@ -5,15 +5,12 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.univolunteer.api.client.ActivityClient;
 import com.univolunteer.api.client.LogClient;
 import com.univolunteer.api.client.NotificationClient;
 import com.univolunteer.api.client.RecordClient;
 import com.univolunteer.api.dto.NotificationDTO;
 import com.univolunteer.common.context.UserContext;
-import com.univolunteer.common.domain.entity.Activity;
 import com.univolunteer.common.domain.entity.AuditLog;
 import com.univolunteer.common.domain.vo.ActivityVO;
 import com.univolunteer.common.result.Result;
@@ -32,7 +29,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @RequiredArgsConstructor
 @Service
@@ -99,7 +95,7 @@ public class RegistrationServiceImpl extends ServiceImpl<RegistrationMapper, Reg
         notificationDTO.setType(0);
         notificationClient.sendNotification(notificationDTO);
         System.out.println("activityId = " + activityId);
-        recordClient.addRecord(activityId);
+
         return Result.ok("报名成功，等待审核");
     }
 
@@ -138,6 +134,7 @@ public class RegistrationServiceImpl extends ServiceImpl<RegistrationMapper, Reg
         //去活动微服务里面改变对应报名人数
         if (status==1){
             activityClient.signUp(registration.getActivityId());
+            recordClient.addRecord(registration.getActivityId());
             auditLog.setRemark("报名审核通过");
         }else {
             auditLog.setRemark("报名审核不通过");
@@ -203,10 +200,12 @@ public class RegistrationServiceImpl extends ServiceImpl<RegistrationMapper, Reg
     }
 
     @Override
-    public Result getRegistrationListByStatus( int page, int size) {
+    public Result getRegistrationListByStatus(Integer status,int page, int size) {
         Page<Registration> registrationPage = new Page<>(page, size);
         QueryWrapper<Registration> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("status", 0);
+        if (status!=null){
+            queryWrapper.eq("status", status);
+        }
         Page<Registration> registrations = this.page(registrationPage, queryWrapper);
         IPage<RegistrationVO> registrationVOIPage = getRegistrationVO(page, size, registrations);
         return Result.ok(registrationVOIPage.getRecords(), registrationVOIPage.getTotal());

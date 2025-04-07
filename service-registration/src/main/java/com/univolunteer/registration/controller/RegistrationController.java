@@ -38,9 +38,10 @@ public class RegistrationController {
     }
 
     @GetMapping("/byStatus")
-    public Result getRegistrationListByStatus(@RequestParam(defaultValue = "1") int page,
+    public Result getRegistrationListByStatus(@RequestParam(required = false)Integer status,
+                                             @RequestParam(defaultValue = "1") int page,
                                              @RequestParam(defaultValue = "10") int size) {
-        return registrationService.getRegistrationListByStatus(page, size);
+        return registrationService.getRegistrationListByStatus(status, page, size);
     }
 
 }
