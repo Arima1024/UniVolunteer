@@ -9,4 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 public interface UserClient {
     @GetMapping("/user/{userId}")
     Result getUser(@PathVariable Long userId);
+
+    @GetMapping("/record/{userId}")
+    public Result getUserByRecord(@PathVariable Long userId);
 }
