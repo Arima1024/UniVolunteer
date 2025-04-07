@@ -65,6 +65,8 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
                     activity.getLocation(),        // activityLocation
                     record.getHours(),
                     record.getCompletionStatus(),
+                    activity.getStartTime(),
+                    activity.getEndTime(),
                     record.getSignInTime(),
                     record.getSignOutTime()
             );
@@ -125,6 +127,8 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
                     activity.getLocation(),        // activityLocation
                     record.getHours(),
                     record.getCompletionStatus(),
+                    activity.getStartTime(),
+                    activity.getEndTime(),
                     record.getSignInTime(),
                     record.getSignOutTime()
             );

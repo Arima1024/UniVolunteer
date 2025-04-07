@@ -13,6 +13,8 @@ public class RecordDTO {
     private String activityLocation;
     private Double hours;
     private Integer completionStatus;
+    private LocalDateTime startTime;
+    private LocalDateTime endTime;
     private LocalDateTime signInTime;
     private LocalDateTime signOutTime;
 }
