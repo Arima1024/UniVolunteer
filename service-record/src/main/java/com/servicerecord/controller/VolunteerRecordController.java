@@ -21,21 +21,20 @@ public class VolunteerRecordController {
     //提供签到时间
 
     @PutMapping("/signIn")
-    public Result signIn(@RequestParam Long recordId,@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime signInTime) {
-        return volunteerRecordService.signIn(recordId,signInTime);
+    public Result signIn(@RequestParam Long recordId) {
+        return volunteerRecordService.signIn(recordId);
     }
 
     /**
      * 提供签退时间，并自动计算服务时长
      * @param recordId
-     * @param signOutTime
      * @return
      */
 
 
     @PutMapping("/signOut")
-    public Result signOut(@RequestParam Long recordId,@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime signOutTime) {
-        return volunteerRecordService.signOut(recordId,signOutTime);
+    public Result signOut(@RequestParam Long recordId) {
+        return volunteerRecordService.signOut(recordId);
     }
 
 
@@ -51,8 +50,8 @@ public class VolunteerRecordController {
     @GetMapping("/{startTime}&{finishTime}")
     public Result getRecordsByTime(@RequestParam(defaultValue = "1") int page,
                                    @RequestParam(defaultValue = "10") int size,
-                                   @PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime startTime,
-                                   @PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime finishTime) {
+                                   @PathVariable @DateTimeFormat(pattern = "yyyy-MM-ddTHH:mm:ss") LocalDateTime startTime,
+                                   @PathVariable @DateTimeFormat(pattern = "yyyy-MM-ddTHH:mm:ss") LocalDateTime finishTime) {
         return Result.ok(volunteerRecordService.getRecordsByTimeRange(page,size,startTime, finishTime));
     }
 
@@ -62,8 +61,8 @@ public class VolunteerRecordController {
 
     @GetMapping("/userTotal")
 
-    public Result getUserTotalTime(@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime startTime,
-                                   @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime finishTime) {
+    public Result getUserTotalTime(@RequestParam @DateTimeFormat(pattern = "yyyy-MM-ddTHH:mm:ss") LocalDateTime startTime,
+                                   @RequestParam @DateTimeFormat(pattern = "yyyy-MM-ddTHH:mm:ss") LocalDateTime finishTime) {
         return Result.ok(volunteerRecordService.calculateTotalTime(startTime,finishTime));
     }
 
@@ -94,8 +93,13 @@ public class VolunteerRecordController {
     @AdminOnly
     @GetMapping("/admin/all")
     public Result getAllOnlyAdmin(@RequestParam(defaultValue = "1") int page,
-                                  @RequestParam(defaultValue = "10") int size) {
-        return Result.ok(volunteerRecordService.getAllOnlyAdmin(page,size));
+                                  @RequestParam(defaultValue = "10") int size,
+                                  @RequestParam(required = false) String name,
+                                  @RequestParam(required = false) String school,
+                                  @RequestParam(required = false) String activityName,
+                                  @RequestParam(required = false) String activityLocation,
+                                  @RequestParam(required = false)@DateTimeFormat(pattern = "yyyy-MM-ddTHH:mm:ss") LocalDateTime startTime) {
+        return Result.ok(volunteerRecordService.getAllOnlyAdmin(page,size,name,school,activityName,activityLocation,startTime));
 
     }
 

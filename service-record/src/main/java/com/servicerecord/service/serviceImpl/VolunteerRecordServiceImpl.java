@@ -217,12 +217,9 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
 
     @Override
     @Transactional
-    public Result signIn(Long recordId, LocalDateTime signInTime) {
+    public Result signIn(Long recordId) {
 
-        // 1. 检查 signInTime 是否为空
-        if (signInTime == null) {
-            return Result.fail("签到时间不能为空");
-        }
+        LocalDateTime signInTime=LocalDateTime.now();
 
         VolunteerRecord record = this.getById(recordId);
         if (record == null) {
@@ -254,15 +251,14 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
         record.setSignInTime(signInTime);
         this.updateById(record);
 
-        return Result.ok("数据库记录成功");
+        return Result.ok(signInTime);
     }
 
     @Override
     @Transactional
-    public Result signOut(Long recordId, LocalDateTime signOutTime) {
-        if (signOutTime == null) {
-            return Result.fail("签退时间不能为空");
-        }
+    public Result signOut(Long recordId) {
+
+        LocalDateTime signOutTime=LocalDateTime.now();
 
         VolunteerRecord record = this.getById(recordId);
 
@@ -286,7 +282,7 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
         record.setHours(hours);
         this.updateById(record);
 
-        return Result.ok("数据库记录成功");
+        return Result.ok(signOutTime);
     }
 
     @Override
@@ -318,36 +314,51 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
     }
 
     @Override
-    public Page<RecordVO> getAllOnlyAdmin(int page, int size) {
+    public Page<RecordVO> getAllOnlyAdmin(int page, int size, String name, String school, String activityName, String activityLocation, LocalDateTime startTime) {
+
         LambdaQueryWrapper<VolunteerRecord> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(VolunteerRecord::getCompletionStatus,CompletionStatus.COMPLETED.getValue());
-        Page<VolunteerRecord> recordsPage=new Page<>(page,size);
-        Page<VolunteerRecord> volunteerRecordPage=this.baseMapper.selectPage(recordsPage,queryWrapper);
-        // 将 VolunteerRecord 映射为 RecordDTO
-        List<RecordVO> dtoList = volunteerRecordPage.getRecords().stream().map(record -> {
-            // 从活动服务中获取活动信息，并转换为 Activity 对象
+        queryWrapper.eq(VolunteerRecord::getCompletionStatus, CompletionStatus.COMPLETED.getValue());
+
+        Page<VolunteerRecord> recordsPage = new Page<>(page, size);
+        Page<VolunteerRecord> volunteerRecordPage = this.baseMapper.selectPage(recordsPage, queryWrapper);
+
+        // 原始数据转换+过滤
+        List<RecordVO> filteredList = volunteerRecordPage.getRecords().stream().map(record -> {
             Activity activity = resultParserUtils.parseData(
                     activityClient.getActivity(record.getActivityId()).getData(), Activity.class
             );
             UserNotificationVO user = resultParserUtils.parseData(
                     userClient.getUserByRecord(record.getUserId()).getData(), UserNotificationVO.class
             );
-            System.out.println("user = " + user);
+
             return new RecordVO(
-                    record.getId(),                // recordId
+                    record.getId(),
                     user.getUsername(),
                     user.getPhone(),
                     user.getOrganizationName(),
                     activity.getTitle(),
                     activity.getStartTime(),
-                    activity.getLocation(),     // activityLocation
+                    activity.getLocation(),
                     record.getHours()
             );
+        }).filter(recordVO -> {
+            boolean match = true;
+            if (name != null && !recordVO.getUserName().contains(name)) match = false;
+            if (school != null && !recordVO.getSchool().contains(school)) match = false;
+            if (activityName != null && !recordVO.getActivityName().contains(activityName)) match = false;
+            if (activityLocation != null && !recordVO.getActivityLocation().contains(activityLocation)) match = false;
+            if (startTime != null && recordVO.getStartTime() != null &&
+                    recordVO.getStartTime().isBefore(startTime)) match = false;
+            return match;
         }).collect(Collectors.toList());
 
-        // 构造新的 RecordDTO 分页对象
-        Page<RecordVO> dtoPage = new Page<>(volunteerRecordPage.getCurrent(), volunteerRecordPage.getSize(), volunteerRecordPage.getTotal());
-        dtoPage.setRecords(dtoList);
+        // 手动分页
+        int fromIndex = Math.min((page - 1) * size, filteredList.size());
+        int toIndex = Math.min(fromIndex + size, filteredList.size());
+        List<RecordVO> pageList = filteredList.subList(fromIndex, toIndex);
+
+        Page<RecordVO> dtoPage = new Page<>(page, size, filteredList.size());
+        dtoPage.setRecords(pageList);
 
         return dtoPage;
     }
