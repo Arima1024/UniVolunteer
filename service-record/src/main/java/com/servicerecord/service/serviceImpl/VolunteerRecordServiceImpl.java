@@ -4,15 +4,19 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.servicerecord.domain.dto.RecordDTO;
+import com.servicerecord.domain.dto.RecordVO;
 import com.servicerecord.domain.entity.VolunteerRecord;
 import com.servicerecord.enums.CompletionStatus;
 import com.servicerecord.mapper.VolunteerRecordMapper;
 import com.servicerecord.service.VolunteerRecordService;
 import com.univolunteer.api.client.ActivityClient;
 import com.univolunteer.api.client.CommentClient;
+import com.univolunteer.api.client.UserClient;
 import com.univolunteer.common.context.UserContext;
 import com.univolunteer.common.domain.dto.VolunteerDTO;
 import com.univolunteer.common.domain.entity.Activity;
+import com.univolunteer.common.domain.entity.Users;
+import com.univolunteer.common.domain.vo.UserNotificationVO;
 import com.univolunteer.common.result.Result;
 import com.univolunteer.common.utils.ResultParserUtils;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +36,8 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
         implements VolunteerRecordService {
 
     private final ActivityClient activityClient;
+
+    private final UserClient userClient;
 
     private final CommentClient commentClient;
 
@@ -309,5 +315,39 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
         dto.setCount((long) records.size());
         dto.setTime(totalTime);
         return dto;
+    }
+
+    @Override
+    public Page<RecordVO> getAllOnlyAdmin(int page, int size) {
+        LambdaQueryWrapper<VolunteerRecord> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(VolunteerRecord::getCompletionStatus,CompletionStatus.COMPLETED.getValue());
+        Page<VolunteerRecord> recordsPage=new Page<>(page,size);
+        Page<VolunteerRecord> volunteerRecordPage=this.baseMapper.selectPage(recordsPage,queryWrapper);
+        // 将 VolunteerRecord 映射为 RecordDTO
+        List<RecordVO> dtoList = volunteerRecordPage.getRecords().stream().map(record -> {
+            // 从活动服务中获取活动信息，并转换为 Activity 对象
+            Activity activity = resultParserUtils.parseData(
+                    activityClient.getActivity(record.getActivityId()).getData(), Activity.class
+            );
+            UserNotificationVO user = resultParserUtils.parseData(
+                    userClient.getUserByRecord(record.getUserId()).getData(), UserNotificationVO.class
+            );
+            return new RecordVO(
+                    record.getId(),                // recordId
+                    user.getUsername(),
+                    user.getPhone(),
+                    user.getOrganizationName(),
+                    activity.getTitle(),
+                    activity.getStartTime(),
+                    activity.getLocation(),     // activityLocation
+                    record.getHours()
+            );
+        }).collect(Collectors.toList());
+
+        // 构造新的 RecordDTO 分页对象
+        Page<RecordVO> dtoPage = new Page<>(volunteerRecordPage.getCurrent(), volunteerRecordPage.getSize(), volunteerRecordPage.getTotal());
+        dtoPage.setRecords(dtoList);
+
+        return dtoPage;
     }
 }
