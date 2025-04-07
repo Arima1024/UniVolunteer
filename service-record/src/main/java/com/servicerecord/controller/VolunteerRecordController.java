@@ -91,5 +91,12 @@ public class VolunteerRecordController {
         return Result.ok(volunteerRecordService.getVolunteerTime(userId));
     }
 
+    @AdminOnly
+    @GetMapping("/admin/all")
+    public Result getAllOnlyAdmin(@RequestParam(defaultValue = "1") int page,
+                                  @RequestParam(defaultValue = "10") int size) {
+        return Result.ok(volunteerRecordService.getAllOnlyAdmin());
+
+    }
 
 }
