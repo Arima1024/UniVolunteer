@@ -42,7 +42,10 @@ public class OrganizationController {
         return organizationService.getList(name, page, size);
     }
 
-
+    @GetMapping("/count")
+    public Result getOrganizationCount() {
+        return Result.ok(organizationService.count());
+    }
 
 
 }
