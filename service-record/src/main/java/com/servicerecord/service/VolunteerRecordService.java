@@ -2,6 +2,7 @@ package com.servicerecord.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.servicerecord.domain.dto.CommentRecordDTO;
 import com.servicerecord.domain.dto.RecordDTO;
 import com.servicerecord.domain.dto.RecordVO;
 import com.servicerecord.domain.entity.VolunteerRecord;
@@ -28,4 +29,6 @@ public interface VolunteerRecordService extends IService<VolunteerRecord> {
     VolunteerDTO getVolunteerTime(Long userId);
 
     Page<RecordVO> getAllOnlyAdmin(int page, int size, String name, String school, String activityName, String activityLocation, LocalDateTime startTime);
+
+    CommentRecordDTO getRecord(Long activityId, Long userId);
 }

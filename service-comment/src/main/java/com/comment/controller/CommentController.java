@@ -1,6 +1,7 @@
 package com.comment.controller;
 
 import com.comment.domain.dto.ActivityDTO;
+import com.comment.domain.dto.CommentRecordDTO;
 import com.comment.domain.dto.CommentResponseDTO;
 import com.comment.domain.dto.RecordDTO;
 import com.comment.domain.entity.Comment;
@@ -58,7 +59,7 @@ public class CommentController{
 
             // 远程调用 service-record 获取签到记录
             Result recordResult = recordClient.getRecord(comment.getActivityId(), comment.getUserId());
-            RecordDTO record = resultParserUtils.parseData(recordResult.getData(), RecordDTO.class);
+            CommentRecordDTO record = resultParserUtils.parseData(recordResult.getData(), CommentRecordDTO.class);
 
             // 封装返回 DTO
             return new CommentResponseDTO(comment.getId(),activity.getName(), record.getSignInTime(),record.getSignOutTime(),record.getHours());
@@ -83,7 +84,7 @@ public class CommentController{
 
             // 远程调用 service-record 获取签到记录
             Result recordResult = recordClient.getRecord(comment.getActivityId(), comment.getUserId());
-            RecordDTO record = resultParserUtils.parseData(recordResult.getData(), RecordDTO.class);
+            CommentRecordDTO record = resultParserUtils.parseData(recordResult.getData(), CommentRecordDTO.class);
 
             // 封装返回 DTO
             return new CommentResponseDTO(comment.getId(),activity.getName(), record.getSignInTime(),record.getSignOutTime(),record.getHours());

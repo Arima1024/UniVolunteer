@@ -3,6 +3,7 @@ package com.servicerecord.service.serviceImpl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.servicerecord.domain.dto.CommentRecordDTO;
 import com.servicerecord.domain.dto.RecordDTO;
 import com.servicerecord.domain.dto.RecordVO;
 import com.servicerecord.domain.entity.VolunteerRecord;
@@ -360,5 +361,21 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
         dtoPage.setRecords(pageList);
 
         return dtoPage;
+    }
+
+    @Override
+    public CommentRecordDTO getRecord(Long activityId, Long userId) {
+        LambdaQueryWrapper<VolunteerRecord> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(VolunteerRecord::getActivityId,activityId);
+        lambdaQueryWrapper.eq(VolunteerRecord::getUserId,userId);
+        VolunteerRecord record = this.baseMapper.selectOne(lambdaQueryWrapper);
+        CommentRecordDTO recordDTO=new CommentRecordDTO(
+                record.getId(),                // recordId
+                record.getHours(),
+                record.getCompletionStatus(),
+                record.getSignInTime(),
+                record.getSignOutTime()
+        );
+        return recordDTO;
     }
 }

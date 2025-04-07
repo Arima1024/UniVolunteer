@@ -55,6 +55,11 @@ public class VolunteerRecordController {
         return Result.ok(volunteerRecordService.getRecordsByTimeRange(page,size,startTime, finishTime));
     }
 
+    @GetMapping("/volunteerRecord/{activityId}/{userId}")
+    public Result getRecord(@PathVariable("activityId") Long activityId, @PathVariable("userId") Long userId){
+        return Result.ok(volunteerRecordService.getRecord(activityId,userId));
+    }
+
     /**
      * 计算用户服务总时长
      */
