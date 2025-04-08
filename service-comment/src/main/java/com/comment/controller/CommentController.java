@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/comments")
 @RequiredArgsConstructor
-public class CommentController{
+public class CommentController {
 
     private final CommentService commentService;
 
@@ -33,19 +33,14 @@ public class CommentController{
     private final ResultParserUtils resultParserUtils;
 
     @PutMapping("/toComment")
-    public Result updateComment(@RequestBody Comment comment){
-
-        comment.setCreateTime(LocalDateTime.now());
-        comment.setStatus(1);
-        commentService.updateById(comment);
-        return Result.ok();
-
+    public Result updateComment(@RequestParam Long commentId, @RequestParam int rating,@RequestParam String content) {
+        return commentService.toComment(commentId,rating,content);
     }
 
     //存在待评论和已评论两个状态，需要通过调用activity来返回活动信息。调用record来返回活动记录（签到时间和签退时间）
     @GetMapping("/uncommented")
     @Transactional
-    public Result getUncommentedComments(){
+    public Result getUncommentedComments() {
 
         // 获取待评论的评论列表
         List<Comment> uncommentedComments = commentService.getUncommentedComments();
@@ -61,7 +56,7 @@ public class CommentController{
             CommentRecordDTO record = resultParserUtils.parseData(recordResult.getData(), CommentRecordDTO.class);
 
             // 封装返回 DTO
-            return new CommentResponseDTO(comment.getId(),activity.getName(), record.getSignInTime(),record.getSignOutTime(),record.getHours());
+            return new CommentResponseDTO(comment.getId(), activity.getTitle(), comment.getRating(), comment.getContent(), record.getSignInTime(), record.getSignOutTime(), record.getHours());
         }).collect(Collectors.toList());
 
         return Result.ok(response);
@@ -70,7 +65,7 @@ public class CommentController{
 
     @GetMapping("/commented")
     @Transactional
-    public Result getCommentedComments(){
+    public Result getCommentedComments() {
 
         // 获取待评论的评论列表
         List<Comment> commentedComments = commentService.getCommentedComments();
@@ -86,7 +81,7 @@ public class CommentController{
             CommentRecordDTO record = resultParserUtils.parseData(recordResult.getData(), CommentRecordDTO.class);
 
             // 封装返回 DTO
-            return new CommentResponseDTO(comment.getId(),activity.getName(), record.getSignInTime(),record.getSignOutTime(),record.getHours());
+            return new CommentResponseDTO(comment.getId(), activity.getTitle(), comment.getRating(), comment.getContent(), record.getSignInTime(), record.getSignOutTime(), record.getHours());
         }).collect(Collectors.toList());
 
         return Result.ok(response);
@@ -138,15 +133,15 @@ public class CommentController{
     }
 
     @GetMapping("/rating")
-    public Result getAllRating(){
+    public Result getAllRating() {
         return commentService.getAllRating();
     }
 
 
     @PostMapping("/auto-generate/{activityId}/{userId}")
 
-    public Result autoGenerateComments(@PathVariable Long activityId,@PathVariable Long userId) {
-        commentService.autoGenerateComments(activityId,userId);
+    public Result autoGenerateComments(@PathVariable Long activityId, @PathVariable Long userId) {
+        commentService.autoGenerateComments(activityId, userId);
         return Result.ok();
     }
 }

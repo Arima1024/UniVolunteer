@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -124,6 +125,17 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
 
         this.save(new Comment(activityId,userId,0));
 
+    }
+
+    @Override
+    public Result toComment(Long commentId,int rating,String content){
+        Comment comment=this.getById(commentId);
+        comment.setActivityId(comment.getActivityId());
+        comment.setUserId(comment.getUserId());
+        comment.setCreateTime(LocalDateTime.now());
+        comment.setStatus(1);
+        commentService.updateById(comment);
+        return Result.ok();
     }
 
 
