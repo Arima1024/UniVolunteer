@@ -66,8 +66,8 @@ public class VolunteerRecordController {
 
     @GetMapping("/userTotal")
 
-    public Result getUserTotalTime(@RequestParam @DateTimeFormat(pattern = "yyyy-MM-ddTHH:mm:ss") LocalDateTime startTime,
-                                   @RequestParam @DateTimeFormat(pattern = "yyyy-MM-ddTHH:mm:ss") LocalDateTime finishTime) {
+    public Result getUserTotalTime(@RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-ddTHH:mm:ss") LocalDateTime startTime,
+                                   @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-ddTHH:mm:ss") LocalDateTime finishTime) {
         return Result.ok(volunteerRecordService.calculateTotalTime(startTime,finishTime));
     }
 

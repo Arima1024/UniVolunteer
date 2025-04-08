@@ -278,9 +278,14 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
     public Double calculateTotalTime(LocalDateTime startTime, LocalDateTime finishTime) {
         Long userId = UserContext.getUserId();
         LambdaQueryWrapper<VolunteerRecord> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(VolunteerRecord::getUserId, userId)
-                .ge(VolunteerRecord::getSignInTime, startTime)
-                .le(VolunteerRecord::getSignOutTime, finishTime);
+        queryWrapper.eq(VolunteerRecord::getUserId, userId);
+        //可以自定义时间来进行查询
+        if(startTime!=null){
+            queryWrapper.ge(VolunteerRecord::getSignInTime, startTime);
+        }
+        if(finishTime!=null){
+            queryWrapper.le(VolunteerRecord::getSignOutTime, finishTime);
+        }
 
         List<VolunteerRecord> records = this.list(queryWrapper);
 
