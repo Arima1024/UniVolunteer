@@ -134,7 +134,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         comment.setUserId(comment.getUserId());
         comment.setCreateTime(LocalDateTime.now());
         comment.setStatus(1);
-        commentService.updateById(comment);
+        commentMapper.updateById(comment);
         return Result.ok();
     }
 
