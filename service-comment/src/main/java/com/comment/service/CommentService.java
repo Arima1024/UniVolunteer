@@ -31,5 +31,7 @@ public interface CommentService extends IService<Comment> {
 
     List<Comment> getCommentedComments();
 
+    Result toComment(Long commentId,int rating,String content);
+
     void autoGenerateComments(Long activityId,Long userId);
 }
