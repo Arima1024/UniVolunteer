@@ -8,7 +8,7 @@ import lombok.Data;
 public class ActivityDTO {
 
     private Long id;
-    private String name;
+    private String title;
     private String description;
 
 }

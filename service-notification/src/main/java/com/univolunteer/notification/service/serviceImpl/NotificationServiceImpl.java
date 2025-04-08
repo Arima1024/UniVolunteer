@@ -1,6 +1,7 @@
 package com.univolunteer.notification.service.serviceImpl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.univolunteer.api.client.ActivityClient;
@@ -13,6 +14,7 @@ import com.univolunteer.common.domain.vo.UserNotificationVO;
 import com.univolunteer.common.result.Result;
 
 import com.univolunteer.common.utils.ResultParserUtils;
+import com.univolunteer.notification.domain.dto.MessageDTO;
 import com.univolunteer.notification.domain.entity.Announcement;
 import com.univolunteer.notification.domain.entity.Notification;
 import com.univolunteer.notification.domain.po.NotificationDetail;
@@ -23,6 +25,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,9 +62,11 @@ public class NotificationServiceImpl extends ServiceImpl<NotificationMapper,Noti
     public Result getAllNotification(Integer page, Integer size) {
         //分页查询该用户所有的消息，按照发送时间降序排列，后发的放在前面
         Long userId = UserContext.getUserId();
+        System.out.println("userId = " + userId);
         Page<Notification> pageInfo = new Page<>(page, size);
         lambdaQuery().eq(Notification::getUserId, userId).orderByDesc(Notification::getCreateTime).page(pageInfo);
-        return Result.ok(pageInfo.getRecords(), pageInfo.getTotal());
+        IPage<MessageDTO> messageDTO = getMessageDTO(page, size, pageInfo);
+        return Result.ok(messageDTO.getRecords(), messageDTO.getTotal());
     }
 
     @Override
@@ -69,7 +74,8 @@ public class NotificationServiceImpl extends ServiceImpl<NotificationMapper,Noti
         Long userId = UserContext.getUserId();
         Page<Notification> pageInfo = new Page<>(page, size);
         lambdaQuery().eq(Notification::getUserId, userId).eq(Notification::getStatus, 0).orderByDesc(Notification::getCreateTime).page(pageInfo);
-        return Result.ok(pageInfo.getRecords(), pageInfo.getTotal());
+        IPage<MessageDTO> messageDTO = getMessageDTO(page, size, pageInfo);
+        return Result.ok(messageDTO.getRecords(), messageDTO.getTotal());
     }
     @Override
     public Result readNotificationDetail(Long id) {
@@ -97,6 +103,7 @@ public class NotificationServiceImpl extends ServiceImpl<NotificationMapper,Noti
 
     @Override
     public Result getUnreadNotificationCount() {
+        System.out.println(UserContext.getUserId());
         //获取该用户的未读消息数量
         long count = lambdaQuery().eq(Notification::getUserId, UserContext.getUserId()).eq(Notification::getStatus, 0).count();
         return Result.ok(Map.of("count", count));
@@ -126,6 +133,8 @@ public class NotificationServiceImpl extends ServiceImpl<NotificationMapper,Noti
                     .eq("target_role", UserContext.get().getRole().getCode())
                     .eq("status", 1);
         }
+        queryWrapper.eq("status", 1);
+
         List<Announcement> announcements = announcementsMapper.selectList(queryWrapper);
         System.out.println("announcements = " + announcements);
         return Result.ok(announcements);
@@ -143,5 +152,24 @@ public class NotificationServiceImpl extends ServiceImpl<NotificationMapper,Noti
         });
         return Result.ok(announcements);
     }
-
-}
+    private IPage<MessageDTO> getMessageDTO(int page, int size, Page<Notification> notificationPage) {
+         List<MessageDTO> messageDTOList = new ArrayList<>();
+         notificationPage.getRecords().forEach(notification -> {
+             System.out.println("notification = " + notification);
+             MessageDTO messageDTO = new MessageDTO();
+             UserNotificationVO userNotificationVO = resultParserUtils.parseData(userClient.getUserByRecord(notification.getSenderId()).getData(), UserNotificationVO.class);
+             System.out.println("userNotificationVO = " + userNotificationVO);
+             messageDTO.setSendTime(notification.getCreateTime());
+             messageDTO.setType(notification.getType());
+             messageDTO.setUsername(userNotificationVO.getUsername());
+             messageDTO.setId(notification.getId());
+             messageDTOList.add(messageDTO);
+         });
+         Page<MessageDTO> messageDTOPage = new Page<>(page, size);
+         messageDTOPage.setRecords(messageDTOList);
+         messageDTOPage.setTotal(notificationPage.getTotal());
+         messageDTOPage.setPages(notificationPage.getPages());
+         messageDTOPage.setCurrent(notificationPage.getCurrent());
+         return messageDTOPage;
+     }
+    }

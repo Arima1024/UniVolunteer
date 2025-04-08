@@ -34,11 +34,16 @@ public class ActivityController {
             @RequestParam("signUpStartTime") LocalDateTime signUpStartTime,
             @RequestParam("signUpEndTime") LocalDateTime signUpEndTime,
             @RequestParam("maxVolunteers") Long maxVolunteers,
-            @RequestParam("file") MultipartFile file
+            @RequestParam("fileUrl") String fileUrl
     ) {
-        ActivityCreateDTO dto=new ActivityCreateDTO(title,description,category,location,startTime,endTime,maxVolunteers,signUpStartTime,signUpEndTime);
-        return activityService.createActivity(dto, file);
+        ActivityCreateDTO dto=new ActivityCreateDTO(title,description,category,location,startTime,endTime,maxVolunteers,signUpStartTime,signUpEndTime,fileUrl);
+        return activityService.createActivity(dto);
     }
+    @PostMapping("/uploadPic")
+    public Result upload(@RequestParam("file") MultipartFile file){
+       return activityService.upload(file);
+    }
+
 
     @GetMapping("/{activityId}")
     public Result getActivity(@PathVariable Long activityId){

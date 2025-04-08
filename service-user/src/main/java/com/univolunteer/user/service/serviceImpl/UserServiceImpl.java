@@ -341,6 +341,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, Users> implements U
                 vo.setOrganizationName(org.getOrganizationName());
             }
         }
+        System.out.println("user = " + user);
+        System.out.println("vo = " + vo);
         return Result.ok(vo);
     }
 
