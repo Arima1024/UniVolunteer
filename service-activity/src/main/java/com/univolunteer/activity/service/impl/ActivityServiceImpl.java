@@ -50,7 +50,7 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
     private final ResultParserUtils resultParserUtils;
     private final LogClient logClient;
     @Override
-    public Result createActivity(ActivityCreateDTO dto,MultipartFile file) {
+    public Result createActivity(ActivityCreateDTO dto) {
         // 1) 先存活动基础信息
         Activity activity = new Activity();
         activity.setTitle(dto.getTitle());
@@ -68,29 +68,29 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
         activity.setCurrentSignUpCount(0L);    // 初始报名人数 0
         System.out.println("activity = " + activity);
         activityMapper.insert(activity);
+        // 2.2) 写进 activity_assets 表
+        ActivityAsset asset = new ActivityAsset();
+        asset.setActivityId(activity.getId());
+        asset.setFileUrl(dto.getFileUrl());
+        asset.setUploadTime(LocalDateTime.now());
 
-                try {
-                    // 2.1) 上传到 OSS，拿到 fileUrl
-                    String fileUrl = aliOSSUtils.upload(file);
-
-                    // 2.2) 写进 activity_assets 表
-                    ActivityAsset asset = new ActivityAsset();
-                    asset.setActivityId(activity.getId());
-                    asset.setFileUrl(fileUrl);
-                    asset.setUploadTime(LocalDateTime.now());
-
-                    activityAssetMapper.insert(asset);
-
-                } catch (Exception e) {
-                    // 如果这里出错，你可以考虑回滚或者记录日志
-                    // 这里简单处理
-                    e.printStackTrace();
-                }
-
+        activityAssetMapper.insert(asset);
         // 3) 返回成功信息
         return Result.ok("活动上传成功！");
     }
-
+    @Override
+    public Result upload(MultipartFile file) {
+        try {
+            // 2.1) 上传到 OSS，拿到 fileUrl
+            String fileUrl = aliOSSUtils.upload(file);
+            return Result.ok(Map.of("fileUrl", fileUrl));
+        } catch (Exception e) {
+            // 如果这里出错，你可以考虑回滚或者记录日志
+            // 这里简单处理
+            e.printStackTrace();
+        }
+        return Result.fail("上传失败");
+    }
     @Override
     public Result getActivityList(int page,int size) {
         // 1. 创建分页对象
@@ -445,6 +445,8 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
         IPage<ActivityVO> allActivityVO = getAllActivityVO(page, size, activities);
         return Result.ok(allActivityVO.getRecords(), allActivityVO.getTotal());
     }
+
+
 
 
     private IPage<ActivityVO> getAllActivityVO(int pageNo, int pageSize,Page<Activity> activities) {

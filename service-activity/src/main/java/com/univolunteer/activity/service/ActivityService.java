@@ -5,7 +5,7 @@ import com.univolunteer.activity.domain.dto.ActivityCreateDTO;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface ActivityService {
-    Result createActivity(ActivityCreateDTO dto, MultipartFile file);
+    Result createActivity(ActivityCreateDTO dto);
 
     Result getActivityList(int page,int size);
 
@@ -46,4 +46,6 @@ public interface ActivityService {
     Result getActivityCountByUserId(Long userId);
 
     Result getActivityListByVolunteerStatus(String category, String time, String location, int page, int size);
+
+    Result upload(MultipartFile file);
 }

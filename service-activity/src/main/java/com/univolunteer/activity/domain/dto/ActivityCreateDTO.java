@@ -22,4 +22,5 @@ public class ActivityCreateDTO {
     private Long maxVolunteers;
     private LocalDateTime signUpStartTime;
     private LocalDateTime signUpEndTime;
+    private String fileUrl;
 }

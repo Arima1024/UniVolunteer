@@ -206,6 +206,7 @@ public class RegistrationServiceImpl extends ServiceImpl<RegistrationMapper, Reg
         if (status!=null){
             queryWrapper.eq("status", status);
         }
+        queryWrapper.eq("user_id", UserContext.getUserId());
         Page<Registration> registrations = this.page(registrationPage, queryWrapper);
         IPage<RegistrationVO> registrationVOIPage = getRegistrationVO(page, size, registrations);
         return Result.ok(registrationVOIPage.getRecords(), registrationVOIPage.getTotal());

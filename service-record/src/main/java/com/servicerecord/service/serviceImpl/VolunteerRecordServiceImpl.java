@@ -344,6 +344,9 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
         lambdaQueryWrapper.eq(VolunteerRecord::getActivityId,activityId);
         lambdaQueryWrapper.eq(VolunteerRecord::getUserId,userId);
         VolunteerRecord record = this.baseMapper.selectOne(lambdaQueryWrapper);
+        System.out.println("record = " + record);
+        System.out.println("activityId = " + activityId);
+        System.out.println("userId = " + userId);
         CommentRecordDTO recordDTO=new CommentRecordDTO(
                 record.getId(),                // recordId
                 record.getHours(),

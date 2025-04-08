@@ -21,10 +21,10 @@ import java.util.UUID;
 @ConfigurationProperties(prefix = "aliyun.oss")
 public class AliOSSUtils {
     // 示例的OSS配置，建议通过配置文件来管理
-    private String endpoint = "";
+    private String endpoint = "oss-cn-hangzhou.aliyuncs.com";
     private String accessKeyId = "";
     private String accessKeySecret = "";
-    private String bucketName = "";
+    private String bucketName = "uni-volunteer";
 
     /**
      * 实现上传文件到OSS
