@@ -132,6 +132,8 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         Comment comment=this.getById(commentId);
         comment.setActivityId(comment.getActivityId());
         comment.setUserId(comment.getUserId());
+        comment.setRating(rating);
+        comment.setContent(content);
         comment.setCreateTime(LocalDateTime.now());
         comment.setStatus(1);
         commentMapper.updateById(comment);

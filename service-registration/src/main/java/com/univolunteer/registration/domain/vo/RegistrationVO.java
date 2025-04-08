@@ -3,9 +3,11 @@ package com.univolunteer.registration.domain.vo;
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
+import lombok.Data;
 
 import java.time.LocalDateTime;
 
+@Data
 public class RegistrationVO {
     @TableId
     private Long id;  // 报名ID
