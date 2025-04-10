@@ -48,4 +48,6 @@ public interface ActivityService {
     Result getActivityListByVolunteerStatus(String category, String time, String location, int page, int size);
 
     Result upload(MultipartFile file);
+
+    Result getActivityListByRecruiterStatus(Integer status,int page,int size);
 }

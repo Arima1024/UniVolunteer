@@ -20,7 +20,6 @@ public class NotificationController {
           return notificationService.sendNotification(notificationDTO);
     }
 
-
     //获取某个用户全部消息
    @GetMapping("/all")
    public Result getAllNotification(@RequestParam(required = false,defaultValue = "1") Integer page,
@@ -39,8 +38,6 @@ public class NotificationController {
     public Result readNotificationDetail(@PathVariable Long id){
         return notificationService.readNotificationDetail(id);
     }
-
-
 
 
     @GetMapping("/unread/count")

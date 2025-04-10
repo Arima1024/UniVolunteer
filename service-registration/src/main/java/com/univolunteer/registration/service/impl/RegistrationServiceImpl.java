@@ -5,14 +5,12 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.univolunteer.api.client.ActivityClient;
-import com.univolunteer.api.client.LogClient;
-import com.univolunteer.api.client.NotificationClient;
-import com.univolunteer.api.client.RecordClient;
+import com.univolunteer.api.client.*;
 import com.univolunteer.api.dto.NotificationDTO;
 import com.univolunteer.common.context.UserContext;
 import com.univolunteer.common.domain.entity.AuditLog;
 import com.univolunteer.common.domain.vo.ActivityVO;
+import com.univolunteer.common.domain.vo.UserNotificationVO;
 import com.univolunteer.common.result.Result;
 import com.univolunteer.common.utils.ResultParserUtils;
 import com.univolunteer.registration.domain.entity.Registration;
@@ -41,6 +39,7 @@ public class RegistrationServiceImpl extends ServiceImpl<RegistrationMapper, Reg
     private final ResultParserUtils resultParserUtils;
     private  final RecordClient recordClient;
     private final LogClient logClient;
+    private final UserClient userClient;
     @Override
     @Transactional
     public Result register(Long activityId) {
@@ -207,6 +206,21 @@ public class RegistrationServiceImpl extends ServiceImpl<RegistrationMapper, Reg
             queryWrapper.eq("status", status);
         }
         queryWrapper.eq("user_id", UserContext.getUserId());
+        System.out.println("status = " + status);
+        System.out.println("UserContext.getUserId() = " + UserContext.getUserId());
+        Page<Registration> registrations = this.page(registrationPage, queryWrapper);
+        IPage<RegistrationVO> registrationVOIPage = getRegistrationVO(page, size, registrations);
+        return Result.ok(registrationVOIPage.getRecords(), registrationVOIPage.getTotal());
+    }
+
+    @Override
+    public Result getCheckList(int page, int size, Long activityId, Integer status) {
+        Page<Registration> registrationPage = new Page<>(page, size);
+        QueryWrapper<Registration> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("activity_id", activityId);
+        if (status!=null){
+            queryWrapper.eq("status", status);
+        }
         Page<Registration> registrations = this.page(registrationPage, queryWrapper);
         IPage<RegistrationVO> registrationVOIPage = getRegistrationVO(page, size, registrations);
         return Result.ok(registrationVOIPage.getRecords(), registrationVOIPage.getTotal());
@@ -218,8 +232,15 @@ public class RegistrationServiceImpl extends ServiceImpl<RegistrationMapper, Reg
        records.forEach(registration -> {
            RegistrationVO registrationVO = new RegistrationVO();
            ActivityVO activityVO = resultParserUtils.parseData(activityClient.getActivity(registration.getActivityId()).getData(), ActivityVO.class);
+           UserNotificationVO userVO = resultParserUtils.parseData(userClient.getUser(registration.getUserId()).getData(), UserNotificationVO.class);
            BeanUtils.copyProperties(registration, registrationVO);
            BeanUtils.copyProperties(activityVO, registrationVO);
+           BeanUtils.copyProperties(userVO, registrationVO);
+           registrationVO.setUserId(userVO.getId());
+           registrationVO.setId(registration.getId());
+           registrationVO.setStatus(registration.getStatus());
+           System.out.println("userVO = " + userVO);
+           System.out.println("registrationVO = " + registrationVO);
            registrationVOList.add(registrationVO);
        });
        Page<RegistrationVO> registrationVOPage = new Page<>();

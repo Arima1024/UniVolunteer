@@ -47,11 +47,14 @@ public class VolunteerRecordController {
     /**
      * 根据时间范围查询志愿记录
      */
-    @GetMapping("/{startTime}&{finishTime}")
+    @GetMapping("/userRecords")
     public Result getRecordsByTime(@RequestParam(defaultValue = "1") int page,
                                    @RequestParam(defaultValue = "10") int size,
-                                   @PathVariable @DateTimeFormat(pattern = "yyyy-MM-ddTHH:mm:ss") LocalDateTime startTime,
-                                   @PathVariable @DateTimeFormat(pattern = "yyyy-MM-ddTHH:mm:ss") LocalDateTime finishTime) {
+                                   @RequestParam(required = false)  LocalDateTime startTime,
+                                   @RequestParam(required = false)  LocalDateTime finishTime) {
+        if(startTime.isAfter(finishTime)){
+            return Result.fail("结束时间不得早于开始时间");
+        }
         return Result.ok(volunteerRecordService.getRecordsByTimeRange(page,size,startTime, finishTime));
     }
 
@@ -66,8 +69,11 @@ public class VolunteerRecordController {
 
     @GetMapping("/userTotal")
 
-    public Result getUserTotalTime(@RequestParam @DateTimeFormat(pattern = "yyyy-MM-ddTHH:mm:ss") LocalDateTime startTime,
-                                   @RequestParam @DateTimeFormat(pattern = "yyyy-MM-ddTHH:mm:ss") LocalDateTime finishTime) {
+    public Result getUserTotalTime(@RequestParam(required = false)  LocalDateTime startTime,
+                                   @RequestParam(required = false)  LocalDateTime finishTime) {
+        if(startTime.isAfter(finishTime)){
+            return Result.fail("结束时间不得早于开始时间");
+        }
         return Result.ok(volunteerRecordService.calculateTotalTime(startTime,finishTime));
     }
 

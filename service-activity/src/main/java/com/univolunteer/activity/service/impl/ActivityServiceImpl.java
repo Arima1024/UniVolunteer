@@ -91,6 +91,20 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
         }
         return Result.fail("上传失败");
     }
+
+    @Override
+    public Result getActivityListByRecruiterStatus(Integer status,int page,int size) {
+        Page<Activity> activityPage=new Page<>(page, size);
+        QueryWrapper<Activity> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("user_id", UserContext.getUserId());
+        if (status!=null){
+            queryWrapper.eq("status", status);
+        }
+        Page<Activity> activities = this.page(activityPage, queryWrapper);
+        IPage<ActivityVO> allActivityVO = getAllActivityVO(page, size, activities);
+        return Result.ok(allActivityVO.getRecords(), allActivityVO.getTotal());
+    }
+
     @Override
     public Result getActivityList(int page,int size) {
         // 1. 创建分页对象

@@ -30,6 +30,14 @@ public class RegistrationController {
         return registrationService.check(registrationId, status,reason);
     }
 
+    @GetMapping("/recruiter/checkList")
+    public Result getCheckList(@RequestParam(defaultValue = "1") int page,
+                               @RequestParam(defaultValue = "10") int size,
+                               @RequestParam Long activityId,
+                               @RequestParam(required = false) Integer status) {
+        return registrationService.getCheckList(page, size,activityId,status);
+    }
+
     //志愿者自己取消
     @VolunteerOnly
     @PostMapping("/cancel/{registrationId}")

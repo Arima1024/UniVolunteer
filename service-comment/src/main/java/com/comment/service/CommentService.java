@@ -19,9 +19,9 @@ public interface CommentService extends IService<Comment> {
 
     Result getCommentByActivityIdWithDescTime(Long activityId, int page, int size);
 
-    Result getCommentByActivityIdWithHighRatinig(Long activityId, int page, int size);
+    Result getCommentByActivityIdWithHighRating(Long activityId, int page, int size);
 
-    Result getCommentByActivityIdWithLowRatinig(Long activityId, int page, int size);
+    Result getCommentByActivityIdWithLowRating(Long activityId, int page, int size);
 
     Result getCommentByActivityIdWithAscTime(Long activityId, int page, int size);
 
@@ -30,6 +30,8 @@ public interface CommentService extends IService<Comment> {
     List<Comment> getUncommentedComments();
 
     List<Comment> getCommentedComments();
+
+    Result toComment(Long commentId,int rating,String content);
 
     void autoGenerateComments(Long activityId,Long userId);
 }

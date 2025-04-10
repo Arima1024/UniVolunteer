@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/comments")
 @RequiredArgsConstructor
-public class CommentController{
+public class CommentController {
 
     private final CommentService commentService;
 
@@ -33,13 +33,8 @@ public class CommentController{
     private final ResultParserUtils resultParserUtils;
 
     @PutMapping("/toComment")
-    public Result updateComment(@RequestBody Comment comment){
-
-        comment.setCreateTime(LocalDateTime.now());
-        comment.setStatus(1);
-        commentService.updateById(comment);
-        return Result.ok();
-
+    public Result updateComment(@RequestParam Long commentId, @RequestParam int rating,@RequestParam String content) {
+        return commentService.toComment(commentId,rating,content);
     }
 
     //存在待评论和已评论两个状态，需要通过调用activity来返回活动信息。调用record来返回活动记录（签到时间和签退时间）
@@ -131,22 +126,22 @@ public class CommentController{
 
         return switch (sortEnum) {
             case DESC_TIME -> commentService.getCommentByActivityIdWithDescTime(activityId, page, size);
-            case HIGH_RATING -> commentService.getCommentByActivityIdWithHighRatinig(activityId, page, size);
-            case LOW_RATING -> commentService.getCommentByActivityIdWithLowRatinig(activityId, page, size);
+            case HIGH_RATING -> commentService.getCommentByActivityIdWithHighRating(activityId, page, size);
+            case LOW_RATING -> commentService.getCommentByActivityIdWithLowRating(activityId, page, size);
             default -> commentService.getCommentByActivityIdWithAscTime(activityId, page, size);
         };
     }
 
     @GetMapping("/rating")
-    public Result getAllRating(){
+    public Result getAllRating() {
         return commentService.getAllRating();
     }
 
 
     @PostMapping("/auto-generate/{activityId}/{userId}")
 
-    public Result autoGenerateComments(@PathVariable Long activityId,@PathVariable Long userId) {
-        commentService.autoGenerateComments(activityId,userId);
+    public Result autoGenerateComments(@PathVariable Long activityId, @PathVariable Long userId) {
+        commentService.autoGenerateComments(activityId, userId);
         return Result.ok();
     }
 }

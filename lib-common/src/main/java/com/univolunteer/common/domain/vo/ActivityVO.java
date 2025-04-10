@@ -51,4 +51,5 @@ public class ActivityVO {
 
     private String email;
 
+    private String reason;
 }

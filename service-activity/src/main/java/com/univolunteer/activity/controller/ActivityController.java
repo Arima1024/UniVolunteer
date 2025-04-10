@@ -117,6 +117,13 @@ public class ActivityController {
         return activityService.getActivityListByCategory(category,page,size);
     }
 
+    @GetMapping("/recruiter/status")
+    public Result getActivityListByRecruiterStatus(@RequestParam(required = false) Integer status,
+                                                   @RequestParam(defaultValue = "1") int page,
+                                                   @RequestParam(defaultValue = "10") int size){
+        return activityService.getActivityListByRecruiterStatus(status,page,size);
+    }
+
     @GetMapping("/volunteer/allStatus")
     public Result getActivityListByVolunteerStatus(@RequestParam(required = false) String category,
                                                    @RequestParam(required = false) String time,

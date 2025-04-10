@@ -51,7 +51,10 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
     public Page<RecordDTO> getRecordsByTimeRange(int page,int size,LocalDateTime startTime, LocalDateTime finishTime) {
         LambdaQueryWrapper<VolunteerRecord> queryWrapper = new LambdaQueryWrapper<>();
         Page<VolunteerRecord> records = new Page<>(page,size);
+        Long userId = UserContext.getUserId();
+        queryWrapper.eq(VolunteerRecord::getUserId, userId);
         queryWrapper.eq(VolunteerRecord::getCompletionStatus, CompletionStatus.COMPLETED);
+
         //可以自定义时间来进行查询
         if(startTime!=null){
             queryWrapper.ge(VolunteerRecord::getSignInTime, startTime);
@@ -258,8 +261,8 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
         if (record.getSignInTime() == null) {
             return Result.fail("签到时间不存在，无法签退");
         }
-        if(signOutTime.isBefore(activity.getEndTime()))
-            return Result.fail("活动尚未结束，不可签退");
+        if(signOutTime.isAfter(activity.getEndTime().plusMinutes(30)))
+            return Result.fail("活动已经结束了半个小时，不可签退");
 
         // 计算小时数，确保以 double 类型存储
         long minutes = Duration.between(record.getSignInTime(), signOutTime).toMinutes();
@@ -278,11 +281,17 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
     public Double calculateTotalTime(LocalDateTime startTime, LocalDateTime finishTime) {
         Long userId = UserContext.getUserId();
         LambdaQueryWrapper<VolunteerRecord> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(VolunteerRecord::getUserId, userId)
-                .ge(VolunteerRecord::getSignInTime, startTime)
-                .le(VolunteerRecord::getSignOutTime, finishTime);
+        queryWrapper.eq(VolunteerRecord::getUserId, userId);
+        queryWrapper.eq(VolunteerRecord::getCompletionStatus, CompletionStatus.COMPLETED.getValue());
+        //可以自定义时间来进行查询
+        if(startTime!=null){
+            queryWrapper.ge(VolunteerRecord::getSignInTime, startTime);
+        }
+        if(finishTime!=null){
+            queryWrapper.le(VolunteerRecord::getSignOutTime, finishTime);
+        }
 
-        List<VolunteerRecord> records = this.list(queryWrapper);
+        List<VolunteerRecord> records = this.getBaseMapper().selectList(queryWrapper);
 
         return records.stream()
                 .mapToDouble(record -> record.getHours() != null ? record.getHours() : 0.0)
